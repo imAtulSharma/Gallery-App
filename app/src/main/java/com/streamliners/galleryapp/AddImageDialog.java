@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.streamliners.galleryapp.databinding.ChipColorBinding;
 import com.streamliners.galleryapp.databinding.ChipLabelBinding;
 import com.streamliners.galleryapp.databinding.DialogAddImageBinding;
 
@@ -22,7 +23,7 @@ public class AddImageDialog {
 
     /**
      * To inflate dialog's layout
-     * @param context
+     * @param context context of the main activity
      */
     public void show(Context context) {
         this.mContext = context;
@@ -114,7 +115,7 @@ public class AddImageDialog {
 
     private void inflateColorChips(Set<Integer> colors) {
         for (Integer color : colors) {
-            ChipLabelBinding binding = ChipLabelBinding.inflate(inflater);
+            ChipColorBinding binding = ChipColorBinding.inflate(inflater);
             binding.getRoot().setChipBackgroundColor(ColorStateList.valueOf(color));
             dialogBinding.colorChips.addView(binding.getRoot());
         }
