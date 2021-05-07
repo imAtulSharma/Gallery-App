@@ -23,6 +23,7 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.request.transition.Transition;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.squareup.picasso.Picasso;
 import com.streamliners.galleryapp.databinding.ActivityDemoBinding;
 import com.streamliners.galleryapp.databinding.DialogAddImageBinding;
 
@@ -112,6 +113,8 @@ public class DemoActivity extends AppCompatActivity {
     }
 
     private void loadImage(String url) {
+        // To make the image view visible other wise Glide can't set the bitmap into it
+        dialogBinding.imageView.setVisibility(View.VISIBLE);
         Glide.with(dialogBinding.getRoot())
                 .asBitmap()
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
