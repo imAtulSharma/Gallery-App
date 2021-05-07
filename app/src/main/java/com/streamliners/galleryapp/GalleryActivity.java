@@ -40,6 +40,9 @@ public class GalleryActivity extends AppCompatActivity {
         return false;
     }
 
+    /**
+     * To show the dialog to add image
+     */
     private void showAddImageDialog() {
         new AddImageDialog()
                 .show(this, new AddImageDialog.OnCompleteListener() {
@@ -58,6 +61,10 @@ public class GalleryActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * To inflate the view for the incoming item
+     * @param item item to be placed in the view
+     */
     private void inflateViewForItem(Item item) {
         // inflate layout
         ItemCardBinding binding = ItemCardBinding.inflate(getLayoutInflater());
