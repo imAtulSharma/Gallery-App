@@ -118,42 +118,43 @@ public class DemoActivity extends AppCompatActivity {
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .skipMemoryCache(true)
                 .load(url)
-//                .listener(new RequestListener<Bitmap>() {
-//                    @Override
-//                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-//                        dialogBinding.linearProgressIndicator.setVisibility(View.GONE);
-//                        dialogBinding.progressSubtitle.setText(e.toString());
-//
-//                        return true;
-//                    }
-//
-//                    @Override
-//                    public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-//                        // hiding the loader and showing the image
-//                        dialogBinding.progressIndicatorRoot.setVisibility(View.GONE);
-//                        dialogBinding.addImageRoot.setVisibility(View.VISIBLE);
-//
-//                        dialogBinding.imageView.setImageBitmap(resource);
-//
-//                        return true;
-//                    }
-//                })
-//                .into(dialogBinding.imageView)
-                .into(new CustomTarget<Bitmap>() {
+                .listener(new RequestListener<Bitmap>() {
                     @Override
-                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                        dialogBinding.linearProgressIndicator.setVisibility(View.GONE);
+                        dialogBinding.progressSubtitle.setText(e.toString());
+
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
                         // hiding the loader and showing the image
                         dialogBinding.progressIndicatorRoot.setVisibility(View.GONE);
                         dialogBinding.addImageRoot.setVisibility(View.VISIBLE);
 
                         dialogBinding.imageView.setImageBitmap(resource);
-                    }
 
-                    @Override
-                    public void onLoadCleared(@Nullable Drawable placeholder) {
-
+                        return true;
                     }
-                });
+                })
+//                .into(mainBinding.imageView);
+                .into(dialogBinding.imageView);
+//                .into(new CustomTarget<Bitmap>() {
+//                    @Override
+//                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+//                        // hiding the loader and showing the image
+//                        dialogBinding.progressIndicatorRoot.setVisibility(View.GONE);
+//                        dialogBinding.addImageRoot.setVisibility(View.VISIBLE);
+//
+//                        dialogBinding.imageView.setImageBitmap(resource);
+//                    }
+//
+//                    @Override
+//                    public void onLoadCleared(@Nullable Drawable placeholder) {
+//
+//                    }
+//                });
     }
 
     /**
