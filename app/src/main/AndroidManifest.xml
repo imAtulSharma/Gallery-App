@@ -12,10 +12,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GalleryApp" >
 
-        <activity android:name=".DemoActivity">
-
-        </activity>
-
         <activity android:name=".GalleryActivity"
             android:label="Gallery">
             <intent-filter>
