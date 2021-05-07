@@ -99,7 +99,7 @@ public class DemoActivity extends AppCompatActivity {
      */
     private void fetchImage(int width, int height) {
         // make the input dialog gone and progress indicator visible
-        dialogBinding.inputDimesionsRoot.setVisibility(View.GONE);
+        dialogBinding.inputDimensionsRoot.setVisibility(View.GONE);
         dialogBinding.progressIndicatorRoot.setVisibility(View.VISIBLE);
 
         // loading the image from the given url
