@@ -38,8 +38,8 @@ public class ItemHelper {
     private Set<Integer> mColors;
     private List<String> mLabels = new ArrayList<>();
 
-    private String rectangularImageUrl = "https://picusm.photos/%d/%d",
-            squareImageUrl = "https://picusm.photos/%d";
+    private String rectangularImageUrl = "https://picsum.photos/%d/%d",
+            squareImageUrl = "https://picsum.photos/%d";
 
     /**
      * To fetch data for the rectangular image
@@ -76,8 +76,8 @@ public class ItemHelper {
         Glide.with(mContext)
                 .asBitmap()
                 .load(url)
-//                .diskCacheStrategy(DiskCacheStrategy.NONE)
-//                .skipMemoryCache(true)
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
                 .into(new CustomTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
