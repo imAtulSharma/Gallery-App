@@ -68,7 +68,6 @@ public class DemoActivity extends AppCompatActivity {
 
         // To show the dialog
         dialog = new MaterialAlertDialogBuilder(this)
-                .setCancelable(false)
                 .setView(dialogBinding.getRoot())
                 .show();
 
@@ -113,7 +112,7 @@ public class DemoActivity extends AppCompatActivity {
     }
 
     private void loadImage(String url) {
-        Glide.with(this)
+        Glide.with(dialogBinding.getRoot())
                 .asBitmap()
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .skipMemoryCache(true)
