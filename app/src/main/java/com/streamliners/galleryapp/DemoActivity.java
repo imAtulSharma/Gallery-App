@@ -19,16 +19,10 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.target.Target;
-import com.bumptech.glide.request.transition.Transition;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.squareup.picasso.Picasso;
 import com.streamliners.galleryapp.databinding.ActivityDemoBinding;
 import com.streamliners.galleryapp.databinding.DialogAddImageBinding;
-
-import java.util.List;
-import java.util.Set;
 
 public class DemoActivity extends AppCompatActivity {
     ActivityDemoBinding mainBinding;

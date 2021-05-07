@@ -170,9 +170,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/choosePaletteTitle"
                 app:singleSelection="true">
 
-                <include layout="@layout/chip_color" />
-
-                <include layout="@layout/chip_color" />
 
             </com.google.android.material.chip.ChipGroup>
 
@@ -199,9 +196,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/chooseLabelTitle"
                 app:singleSelection="true">
 
-                <include layout="@layout/chip_label" />
-
-                <include layout="@layout/chip_label" />
 
             </com.google.android.material.chip.ChipGroup>
 
