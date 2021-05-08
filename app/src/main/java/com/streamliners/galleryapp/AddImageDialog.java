@@ -24,7 +24,7 @@ import com.streamliners.galleryapp.models.Item;
 import java.util.List;
 import java.util.Set;
 
-public class AddImageDialog {
+public class AddImageDialog implements ItemHelper.OnCompleteListener {
     private Context mContext;
     private OnCompleteListener mListener;
     private DialogAddImageBinding dialogBinding;
@@ -77,24 +77,30 @@ public class AddImageDialog {
                 String width = dialogBinding.widthTextView.getEditText().getText().toString().trim();
                 String height = dialogBinding.heightTextView.getEditText().getText().toString().trim();
 
-                // showing error(s) if there is error
-                if (width.isEmpty()) {
-                    dialogBinding.widthTextView.setError("Enter width");
-                    return;
-                } else if (height.isEmpty()) {
-                    dialogBinding.heightTextView.setError("Enter height");
+                // Guard Code
+                // showing error(s) if there is no dimensions input
+                if (width.isEmpty() && height.isEmpty()) {
+                    dialogBinding.widthTextView.setError("Enter at least on parameter");
                     return;
                 }
+
+                // Hiding keyboard
+                hideKeyboard();
 
                 // make the input dialog gone and progress indicator visible
                 dialogBinding.inputDimensionsRoot.setVisibility(View.GONE);
                 dialogBinding.progressIndicatorRoot.setVisibility(View.VISIBLE);
 
-                // Hiding keyboard
-                hideKeyboard();
-
-                // fetching image with the given width and height
-                fetchRandomImage(Integer.parseInt(width), Integer.parseInt(height));
+                // For square image
+                if (width.isEmpty()) {
+                    fetchRandomImage(Integer.parseInt(height));
+                } else if (height.isEmpty()) {
+                    fetchRandomImage(Integer.parseInt(width));
+                }
+                // For Rectangular image
+                else{
+                    fetchRandomImage(Integer.parseInt(width), Integer.parseInt(height));
+                }
             }
         });
     }
@@ -108,25 +114,22 @@ public class AddImageDialog {
     }
 
     /**
-     * To fetch any random image from internet
+     * To fetch any rectangle image from internet
      * @param width width of the image
      * @param height height of the image
      */
     private void fetchRandomImage(int width, int height) {
         new ItemHelper()
-                .fetchData(mContext, width, height, new ItemHelper.OnCompleteListener() {
-                    @Override
-                    public void onFetched(Bitmap bitmap, Set<Integer> colors, List<String> labels) {
-                        showData(bitmap, colors, labels);
-                    }
+                .fetchData(mContext, width, height, this);
+    }
 
-                    @Override
-                    public void onError(String error) {
-                        // To show the error and hide the loader
-                        dialogBinding.linearProgressIndicator.setVisibility(View.GONE);
-                        dialogBinding.progressSubtitle.setText(error);
-                    }
-                });
+    /**
+     * To fetch any square image
+     * @param side
+     */
+    private void fetchRandomImage(int side) {
+        new ItemHelper()
+                .fetchData(mContext, side, this);
     }
 
     /**
@@ -202,6 +205,7 @@ public class AddImageDialog {
         binding.getRoot().setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                dialogBinding.customLabelInput.setError(null);
                 dialogBinding.customLabelInput.setVisibility(isChecked ? View.VISIBLE : View.GONE);
                 isCustomLabel = isChecked;
             }
@@ -246,6 +250,7 @@ public class AddImageDialog {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 dialogBinding.widthTextView.setError(null);
                 dialogBinding.heightTextView.setError(null);
+                dialogBinding.customLabelInput.setError(null);
             }
 
             @Override
@@ -257,6 +262,20 @@ public class AddImageDialog {
         // add the text watcher to the text fields
         dialogBinding.widthTextView.getEditText().addTextChangedListener(textWatcher);
         dialogBinding.heightTextView.getEditText().addTextChangedListener(textWatcher);
+        dialogBinding.customLabelInput.getEditText().addTextChangedListener(textWatcher);
+    }
+
+    @Override
+    public void onFetched(Bitmap bitmap, Set<Integer> colors, List<String> labels) {
+        showData(bitmap, colors, labels);
+    }
+
+    @Override
+    public void onError(String error) {
+        // To show the error and hide the loader
+        dialogBinding.linearProgressIndicator.setVisibility(View.GONE);
+        dialogBinding.progressSubtitle.setText(error);
+        alertDialog.setCancelable(true);
     }
 
     /**
