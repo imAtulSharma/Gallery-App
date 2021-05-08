@@ -31,7 +31,7 @@
 
             <TextView
                 android:id="@+id/message"
-                style="@style/TextAppearance.MaterialComponents.Headline6"
+                style="@style/CustomTitleTheme"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
@@ -109,7 +109,7 @@
 
             <TextView
                 android:id="@+id/progress_subtitle"
-                style="@style/TextAppearance.MaterialComponents.Headline6"
+                style="@style/CustomTitleTheme"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
@@ -150,7 +150,7 @@
 
             <TextView
                 android:id="@+id/choosePaletteTitle"
-                style="@style/TextAppearance.MaterialComponents.Headline5"
+                style="@style/CustomTitleTheme"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
@@ -176,7 +176,7 @@
 
             <TextView
                 android:id="@+id/chooseLabelTitle"
-                style="@style/TextAppearance.MaterialComponents.Headline5"
+                style="@style/CustomTitleTheme"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
