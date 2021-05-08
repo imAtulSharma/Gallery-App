@@ -2,6 +2,7 @@ package com.streamliners.galleryapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.text.Editable;
@@ -51,6 +52,9 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
             mListener.OnError("Cast Exception");
             return;
         }
+
+        // To set the screen orientation in portrait mode only
+        ((GalleryActivity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // creating and showing the dialog box
         alertDialog = new MaterialAlertDialogBuilder(mContext, R.style.CustomDialogTheme)
@@ -190,6 +194,9 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
                 mListener.OnImageAdded(new Item(image, color, label));
 
                 alertDialog.dismiss();
+
+                // To set the screen orientation according to the sensor
+                ((GalleryActivity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
             }
         });
     }
@@ -275,7 +282,12 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
         // To show the error and hide the loader
         dialogBinding.linearProgressIndicator.setVisibility(View.GONE);
         dialogBinding.progressSubtitle.setText(error);
+
+        // To make the dialog box cancelable
         alertDialog.setCancelable(true);
+
+        // To set the screen orientation according to the sensor
+        ((GalleryActivity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
     }
 
     /**
