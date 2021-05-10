@@ -137,33 +137,6 @@ public class GalleryActivity extends AppCompatActivity {
         }
     }
 
-//    /**
-//     * To get the json of the object
-//     * @param item item for which the json has to be made
-//     * @return json
-//     */
-//    private String getStringFromItem(Item item) {
-//        Gson gson = new Gson();
-//
-//        return gson.toJson(item);
-//    }
-//
-//    /**
-//     * to get the item from the json string
-//     * @param json json to be parsed
-//     * @return item from the json
-//     */
-//    private Item getItemFromString(String json) {
-//        // Checking for the json
-//        if (json.isEmpty()) {
-//            return null;
-//        }
-//
-//        Gson gson = new Gson();
-//
-//        return gson.fromJson(json, Item.class);
-//    }
-
     /**
      * converts Bitmap picture into string which can be
      * @param bitmapPicture bitmap image to be converted in string
