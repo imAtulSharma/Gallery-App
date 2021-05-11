@@ -1,8 +1,5 @@
 package com.streamliners.galleryapp;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,21 +8,21 @@ import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.gson.Gson;
 import com.streamliners.galleryapp.databinding.ActivityGalleryBinding;
 import com.streamliners.galleryapp.databinding.ItemCardBinding;
 import com.streamliners.galleryapp.models.Item;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class GalleryActivity extends AppCompatActivity {
     ActivityGalleryBinding mainBinding;
-    Set<Item> listOfItems = new HashSet<>();
+    List<Item> listOfItems = new ArrayList<>();
     SharedPreferences preferences;
 
     @Override
@@ -104,10 +101,10 @@ public class GalleryActivity extends AppCompatActivity {
 
         // To add all the items in the shared preferences
         for (int i = 1; i <= countOfItems; i++) {
-            Item item = new Item();
-            item.label = preferences.getString(Constants.ITEM_LABEL + i, "");
-            item.color = preferences.getInt(Constants.ITEM_COLOR + i, 0);
-            item.image = getBitmapFromString(preferences.getString(Constants.ITEM_IMAGE + i, ""));
+            // make a new item
+            Item item = new Item(getBitmapFromString(preferences.getString(Constants.ITEM_IMAGE + i, "")),
+                    preferences.getInt(Constants.ITEM_COLOR + i, 0),
+                    preferences.getString(Constants.ITEM_LABEL + i, ""));
 
             // Add the item in the list and inflate the item in the view
             listOfItems.add(item);
@@ -157,7 +154,6 @@ public class GalleryActivity extends AppCompatActivity {
      */
     private Bitmap getBitmapFromString(String stringPicture) {
         byte[] decodedString = Base64.decode(stringPicture, Base64.DEFAULT);
-        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-        return decodedByte;
+        return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
     }
 }
