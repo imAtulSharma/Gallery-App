@@ -53,9 +53,6 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
             return;
         }
 
-        // To set the screen orientation in portrait mode only
-        ((GalleryActivity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
         // creating and showing the dialog box
         alertDialog = new MaterialAlertDialogBuilder(mContext, R.style.CustomDialogTheme)
                 .setCancelable(false)
@@ -196,7 +193,7 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
                 alertDialog.dismiss();
 
                 // To set the screen orientation according to the sensor
-                ((GalleryActivity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
+                ((GalleryActivity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
             }
         });
     }
@@ -286,8 +283,10 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
         // To make the dialog box cancelable
         alertDialog.setCancelable(true);
 
+        ((GalleryActivity) mContext).isDialogBoxShowed = false;
+
         // To set the screen orientation according to the sensor
-        ((GalleryActivity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
+        ((GalleryActivity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
     }
 
     /**
