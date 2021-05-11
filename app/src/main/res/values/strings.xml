@@ -5,4 +5,5 @@
     <string name="image_load_failed">Image load failed : $1%s</string>
     <string name="refresh">Refresh</string>
     <string name="add_image">Add Image</string>
+    <string name="no_items">No items\nTry adding from the action above.</string>
 </resources>

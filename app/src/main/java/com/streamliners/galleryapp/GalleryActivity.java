@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,6 +37,12 @@ public class GalleryActivity extends AppCompatActivity {
 
         preferences = getPreferences(MODE_PRIVATE);
         getDataFromSharedPreferences();
+
+        // check whether the list is empty or not
+        if (listOfItems.isEmpty()) {
+            // show the no items text view
+            mainBinding.noItemTextView.setVisibility(View.VISIBLE);
+        }
     }
 
     // Action menu methods
@@ -72,6 +79,7 @@ public class GalleryActivity extends AppCompatActivity {
                     public void OnImageAdded(Item item) {
                         isDialogBoxShowed = false;
                         listOfItems.add(item);
+                        mainBinding.noItemTextView.setVisibility(View.GONE);
                         inflateViewForItem(item);
                     }
 
