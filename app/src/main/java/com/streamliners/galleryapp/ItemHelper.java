@@ -67,6 +67,14 @@ public class ItemHelper {
         fetchImage(String.format(squareImageUrl, x));
     }
 
+    public void fetchData(Context context, Bitmap bitmap, OnCompleteListener listener) {
+        this.mListener = listener;
+        this.mContext = context;
+
+        mBitmap = bitmap;
+        extractPaletteFromBitmap();
+    }
+
     /**
      * To fetch random image from the internet
      * @param url url from which the image is to be fetched

@@ -6,4 +6,6 @@
     <string name="refresh">Refresh</string>
     <string name="add_image">Add Image</string>
     <string name="no_items">No items\nTry adding from the action above.</string>
+    <string name="edit_item_title">Edit</string>
+    <string name="delete_item_title">Delete</string>
 </resources>

@@ -1,14 +1,19 @@
 package com.streamliners.galleryapp;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
+import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,12 +26,18 @@ import com.streamliners.galleryapp.models.Item;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class GalleryActivity extends AppCompatActivity {
     ActivityGalleryBinding mainBinding;
     List<Item> listOfItems = new ArrayList<>();
     SharedPreferences preferences;
     public boolean isDialogBoxShowed;
+    private Context context;
+
+    private int initialNumberOfItemsInList = 0;
+
+    private int selectedItemPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +71,107 @@ public class GalleryActivity extends AppCompatActivity {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+
+        // check for the menu item selected
+        if (item.getItemId() == R.id.edit_item) {
+            editItemInList(selectedItemPosition);
+            return true;
+        } else if (item.getItemId() == R.id.delete_item) {
+            deleteItemFromList(selectedItemPosition);
+            return true;
+        }
+        return super.onContextItemSelected(item);
+    }
+
+    /**
+     * To edit the item from the list
+     * @param position position defined of the item
+     */
+    private void editItemInList(int position) {
+        int index = listOfItems.size() - initialNumberOfItemsInList + position;
+
+        Item item = listOfItems.get(index);
+        new ItemHelper()
+                .fetchData(this, item.image, new ItemHelper.OnCompleteListener() {
+                    @Override
+                    public void onFetched(Bitmap bitmap, Set<Integer> colors, List<String> labels) {
+                        showEditItemDialog(index, bitmap, colors, labels);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        new MaterialAlertDialogBuilder(GalleryActivity.this)
+                                .setTitle("Error")
+                                .setMessage(error)
+                                .show();
+                    }
+                });
+    }
+
+    /**
+     * To show dialog to edit the image
+     */
+    private void showEditItemDialog(int index, Bitmap bitmap, Set<Integer> colors, List<String> labels) {
+        new EditImageDialog()
+                .showData(this, bitmap, colors, labels, new EditImageDialog.OnCompleteListener() {
+                    @Override
+                    public void OnImageEdited(Item item) {
+                        // Update the list by removing and adding again to the same index
+                        listOfItems.remove(index);
+                        listOfItems.add(index, item);
+                        mainBinding.list.removeViewAt(index);
+
+
+                        // inflate layout
+                        ItemCardBinding binding = ItemCardBinding.inflate(getLayoutInflater());
+
+                        // Binding the data
+                        binding.imageView.setImageBitmap(item.image);
+                        binding.labelView.setText(item.label);
+                        binding.labelView.setBackgroundColor(item.color);
+
+                        // register the view for the context menu add to the list
+
+                        registerViewForContextMenu(binding, mainBinding.list.getChildCount());
+
+                        mainBinding.list.addView(binding.getRoot(), index);
+                    }
+
+                    @Override
+                    public void OnError(String error) {
+                        new MaterialAlertDialogBuilder(GalleryActivity.this)
+                                .setTitle("Error")
+                                .setMessage(error)
+                                .show();
+                    }
+                });
+    }
+
+    /**
+     * To delete the item from the list
+     * @param position position defined of the item
+     */
+    private void deleteItemFromList(int position) {
+        // current size of the list
+        int noOfItemsInList = listOfItems.size();
+
+        int index = noOfItemsInList - initialNumberOfItemsInList + position;
+
+        // remove the item from both lists
+        listOfItems.remove(index);
+        mainBinding.list.removeViewAt(index);
+
+        // if the list is empty then set the no item text view
+        if (listOfItems.isEmpty()) {
+            mainBinding.noItemTextView.setVisibility(View.VISIBLE);
+        }
+
+        Toast.makeText(this, "Item removed from list", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -99,6 +211,8 @@ public class GalleryActivity extends AppCompatActivity {
      * @param item item to be placed in the view
      */
     private void inflateViewForItem(Item item) {
+        initialNumberOfItemsInList++;
+
         // inflate layout
         ItemCardBinding binding = ItemCardBinding.inflate(getLayoutInflater());
 
@@ -107,8 +221,28 @@ public class GalleryActivity extends AppCompatActivity {
         binding.labelView.setText(item.label);
         binding.labelView.setBackgroundColor(item.color);
 
-        // add to the list
+        // register the view for the context menu add to the list
+
+        registerViewForContextMenu(binding, mainBinding.list.getChildCount());
+
         mainBinding.list.addView(binding.getRoot());
+    }
+
+    /**
+     * To register the view for contextual menu
+     * @param binding binding to be registered
+     * @param position postion of the binding
+     */
+    private void registerViewForContextMenu(ItemCardBinding binding, int position) {
+        binding.imageView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+            @Override
+            public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+                MenuInflater inflater = getMenuInflater();
+                inflater.inflate(R.menu.contextual_menu, menu);
+
+                selectedItemPosition = position;
+            }
+        });
     }
 
     /**
@@ -159,6 +293,15 @@ public class GalleryActivity extends AppCompatActivity {
             // incrementing the index
             itemCount++;
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        preferences.edit()
+                .putBoolean(Constants.DIALOG_BOX_STATUS, false)
+                .apply();
     }
 
     /**
