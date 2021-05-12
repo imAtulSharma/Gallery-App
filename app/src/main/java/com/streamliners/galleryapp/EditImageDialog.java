@@ -64,7 +64,6 @@ public class EditImageDialog {
         dialogBinding.inputDimensionsRoot.setVisibility(View.GONE);
         dialogBinding.progressIndicatorRoot.setVisibility(View.GONE);
         dialogBinding.addImageRoot.setVisibility(View.VISIBLE);
-        dialogBinding.customLabelInput.setVisibility(View.GONE);
 
         // set the image to the view
         dialogBinding.imageView.setImageBitmap(bitmap);

@@ -144,7 +144,6 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
         // make the progress indicator gone and image contents visible
         dialogBinding.progressIndicatorRoot.setVisibility(View.GONE);
         dialogBinding.addImageRoot.setVisibility(View.VISIBLE);
-        dialogBinding.customLabelInput.setVisibility(View.GONE);
 
         // set the image to the view
         dialogBinding.imageView.setImageBitmap(bitmap);
