@@ -295,15 +295,6 @@ public class GalleryActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        preferences.edit()
-                .putBoolean(Constants.DIALOG_BOX_STATUS, false)
-                .apply();
-    }
-
     /**
      * converts Bitmap picture into string which can be
      * @param bitmapPicture bitmap image to be converted in string
