@@ -1,6 +1,5 @@
 package com.streamliners.galleryapp;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
@@ -12,7 +11,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -33,10 +31,6 @@ public class GalleryActivity extends AppCompatActivity {
     List<Item> listOfItems = new ArrayList<>();
     SharedPreferences preferences;
     public boolean isDialogBoxShowed;
-    private Context context;
-
-    private int initialNumberOfItemsInList = 0;
-
     private int selectedItemPosition;
 
     @Override
@@ -75,7 +69,6 @@ public class GalleryActivity extends AppCompatActivity {
 
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
 
         // check for the menu item selected
         if (item.getItemId() == R.id.edit_item) {
@@ -93,14 +86,16 @@ public class GalleryActivity extends AppCompatActivity {
      * @param position position defined of the item
      */
     private void editItemInList(int position) {
-        int index = listOfItems.size() - initialNumberOfItemsInList + position;
+//        int index = listOfItems.size() - initialNumberOfItemsInList + position;
+//
+//        Item item = listOfItems.get(index);
 
-        Item item = listOfItems.get(index);
+        Item item = listOfItems.get(position);
         new ItemHelper()
                 .fetchData(this, item.image, new ItemHelper.OnCompleteListener() {
                     @Override
                     public void onFetched(Bitmap bitmap, Set<Integer> colors, List<String> labels) {
-                        showEditItemDialog(index, bitmap, colors, labels);
+                        showEditItemDialog(position, bitmap, colors, labels);
                     }
 
                     @Override
@@ -116,15 +111,14 @@ public class GalleryActivity extends AppCompatActivity {
     /**
      * To show dialog to edit the image
      */
-    private void showEditItemDialog(int index, Bitmap bitmap, Set<Integer> colors, List<String> labels) {
+    private void showEditItemDialog(int position, Bitmap bitmap, Set<Integer> colors, List<String> labels) {
         new EditImageDialog()
                 .showData(this, bitmap, colors, labels, new EditImageDialog.OnCompleteListener() {
                     @Override
                     public void OnImageEdited(Item item) {
-                        // Update the list by removing and adding again to the same index
-                        listOfItems.remove(index);
-                        listOfItems.add(index, item);
-                        mainBinding.list.removeViewAt(index);
+                        // Update the list and remove the card item from the layout
+                        listOfItems.set(position, item);
+                        mainBinding.list.removeViewAt(position);
 
 
                         // inflate layout
@@ -136,10 +130,10 @@ public class GalleryActivity extends AppCompatActivity {
                         binding.labelView.setBackgroundColor(item.color);
 
                         // register the view for the context menu add to the list
+                        registerViewForContextMenu(binding, position);
 
-                        registerViewForContextMenu(binding, mainBinding.list.getChildCount());
-
-                        mainBinding.list.addView(binding.getRoot(), index);
+                        // Adding the card item to the previous position again
+                        mainBinding.list.addView(binding.getRoot(), position);
                     }
 
                     @Override
@@ -157,21 +151,24 @@ public class GalleryActivity extends AppCompatActivity {
      * @param position position defined of the item
      */
     private void deleteItemFromList(int position) {
-        // current size of the list
-        int noOfItemsInList = listOfItems.size();
+//        // current size of the list
+//        int noOfItemsInList = listOfItems.size();
+//
+//        int index = noOfItemsInList - initialNumberOfItemsInList + position;
+//
+//        // remove the item from both lists
+//        listOfItems.remove(index);
+//        mainBinding.list.removeViewAt(index);
+//
+//        // if the list is empty then set the no item text view
+//        if (listOfItems.isEmpty()) {
+//            mainBinding.noItemTextView.setVisibility(View.VISIBLE);
+//        }
 
-        int index = noOfItemsInList - initialNumberOfItemsInList + position;
+        mainBinding.list.getChildAt(position).setVisibility(View.GONE);
+        listOfItems.set(position, null);
 
-        // remove the item from both lists
-        listOfItems.remove(index);
-        mainBinding.list.removeViewAt(index);
-
-        // if the list is empty then set the no item text view
-        if (listOfItems.isEmpty()) {
-            mainBinding.noItemTextView.setVisibility(View.VISIBLE);
-        }
-
-        Toast.makeText(this, "Item removed from list", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Item deleted from list", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -211,8 +208,6 @@ public class GalleryActivity extends AppCompatActivity {
      * @param item item to be placed in the view
      */
     private void inflateViewForItem(Item item) {
-        initialNumberOfItemsInList++;
-
         // inflate layout
         ItemCardBinding binding = ItemCardBinding.inflate(getLayoutInflater());
 
@@ -231,7 +226,7 @@ public class GalleryActivity extends AppCompatActivity {
     /**
      * To register the view for contextual menu
      * @param binding binding to be registered
-     * @param position postion of the binding
+     * @param position position of the binding
      */
     private void registerViewForContextMenu(ItemCardBinding binding, int position) {
         binding.imageView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
@@ -274,25 +269,25 @@ public class GalleryActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
 
-        // Count of the items in the list
-        int countOfItems = listOfItems.size();
+        // Putting all the objects in the shared preferences
+        int itemCount = 0;
+        for (Item item : listOfItems) {
+            if (item != null) {
+                // incrementing the index
+                itemCount++;
+
+                // Saving the item in the shared preferences
+                preferences.edit()
+                        .putInt(Constants.ITEM_COLOR + itemCount, item.color)
+                        .putString(Constants.ITEM_LABEL + itemCount, item.label)
+                        .putString(Constants.ITEM_IMAGE + itemCount, getStringFromBitmap(item.image))
+                        .apply();
+            }
+        }
         preferences.edit()
-                .putInt(Constants.COUNT_OF_ITEMS, countOfItems)
+                .putInt(Constants.COUNT_OF_ITEMS, itemCount)
                 .putBoolean(Constants.DIALOG_BOX_STATUS, isDialogBoxShowed)
                 .apply();
-
-        // Putting all the objects in the shared preferences
-        int itemCount = 1;
-        for (Item item : listOfItems) {
-            preferences.edit()
-                    .putInt(Constants.ITEM_COLOR + itemCount, item.color)
-                    .putString(Constants.ITEM_LABEL + itemCount, item.label)
-                    .putString(Constants.ITEM_IMAGE + itemCount, getStringFromBitmap(item.image))
-                    .apply();
-
-            // incrementing the index
-            itemCount++;
-        }
     }
 
     /**
