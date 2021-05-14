@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +19,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.streamliners.galleryapp.databinding.ActivityGalleryBinding;
 import com.streamliners.galleryapp.databinding.ItemCardBinding;
 import com.streamliners.galleryapp.models.Item;
@@ -252,9 +255,7 @@ public class GalleryActivity extends AppCompatActivity {
         // To add all the items in the shared preferences
         for (int i = 1; i <= countOfItems; i++) {
             // make a new item
-            Item item = new Item(preferences.getString(Constants.ITEM_URL + i, ""),
-                    preferences.getInt(Constants.ITEM_COLOR + i, 0),
-                    preferences.getString(Constants.ITEM_LABEL + i, ""));
+            Item item = getItemFromJson(preferences.getString(Constants.ITEM + i, ""));
 
             // Add the item in the list and inflate the item in the view
             listOfItems.add(item);
@@ -274,15 +275,16 @@ public class GalleryActivity extends AppCompatActivity {
         // Putting all the objects in the shared preferences
         int itemCount = 0;
         for (Item item : listOfItems) {
+
             if (item != null) {
                 // incrementing the index
                 itemCount++;
 
                 // Saving the item in the shared preferences
                 preferences.edit()
-                        .putInt(Constants.ITEM_COLOR + itemCount, item.color)
-                        .putString(Constants.ITEM_LABEL + itemCount, item.label)
-                        .putString(Constants.ITEM_URL + itemCount, item.url)
+//                        .putInt(Constants.ITEM_COLOR + itemCount, item.color)
+                        .putString(Constants.ITEM + itemCount, getJsonFromItem(item))
+//                        .putString(Constants.ITEM_URL + itemCount, item.url)
                         .apply();
             }
         }
@@ -290,5 +292,17 @@ public class GalleryActivity extends AppCompatActivity {
                 .putInt(Constants.COUNT_OF_ITEMS, itemCount)
                 .putBoolean(Constants.DIALOG_BOX_STATUS, isDialogBoxShowed)
                 .apply();
+    }
+
+    private String getJsonFromItem(Item item) {
+        Gson json = new Gson();
+
+        return json.toJson(item);
+    }
+
+    private Item getItemFromJson(String string) {
+        Gson json = new Gson();
+
+        return json.fromJson(string, Item.class);
     }
 }
