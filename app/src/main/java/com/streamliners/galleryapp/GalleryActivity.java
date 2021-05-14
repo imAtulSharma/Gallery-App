@@ -16,6 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.streamliners.galleryapp.databinding.ActivityGalleryBinding;
 import com.streamliners.galleryapp.databinding.ItemCardBinding;
@@ -69,7 +70,6 @@ public class GalleryActivity extends AppCompatActivity {
 
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
-
         // check for the menu item selected
         if (item.getItemId() == R.id.edit_item) {
             editItemInList(selectedItemPosition);
@@ -86,16 +86,12 @@ public class GalleryActivity extends AppCompatActivity {
      * @param position position defined of the item
      */
     private void editItemInList(int position) {
-//        int index = listOfItems.size() - initialNumberOfItemsInList + position;
-//
-//        Item item = listOfItems.get(index);
-
         Item item = listOfItems.get(position);
         new ItemHelper()
-                .fetchData(this, item.image, new ItemHelper.OnCompleteListener() {
+                .fetchData(this, item.url, new ItemHelper.OnCompleteListener() {
                     @Override
-                    public void onFetched(Bitmap bitmap, Set<Integer> colors, List<String> labels) {
-                        showEditItemDialog(position, bitmap, colors, labels);
+                    public void onFetched(String url, Set<Integer> colors, List<String> labels) {
+                        showEditItemDialog(position, url, colors, labels);
                     }
 
                     @Override
@@ -111,9 +107,9 @@ public class GalleryActivity extends AppCompatActivity {
     /**
      * To show dialog to edit the image
      */
-    private void showEditItemDialog(int position, Bitmap bitmap, Set<Integer> colors, List<String> labels) {
+    private void showEditItemDialog(int position, String url, Set<Integer> colors, List<String> labels) {
         new EditImageDialog()
-                .showData(this, bitmap, colors, labels, new EditImageDialog.OnCompleteListener() {
+                .showData(this, url, colors, labels, new EditImageDialog.OnCompleteListener() {
                     @Override
                     public void OnImageEdited(Item item) {
                         // Update the list and remove the card item from the layout
@@ -125,7 +121,9 @@ public class GalleryActivity extends AppCompatActivity {
                         ItemCardBinding binding = ItemCardBinding.inflate(getLayoutInflater());
 
                         // Binding the data
-                        binding.imageView.setImageBitmap(item.image);
+                        Glide.with(GalleryActivity.this)
+                                .load(url)
+                                .into(binding.imageView);
                         binding.labelView.setText(item.label);
                         binding.labelView.setBackgroundColor(item.color);
 
@@ -151,23 +149,25 @@ public class GalleryActivity extends AppCompatActivity {
      * @param position position defined of the item
      */
     private void deleteItemFromList(int position) {
-//        // current size of the list
-//        int noOfItemsInList = listOfItems.size();
-//
-//        int index = noOfItemsInList - initialNumberOfItemsInList + position;
-//
-//        // remove the item from both lists
-//        listOfItems.remove(index);
-//        mainBinding.list.removeViewAt(index);
-//
-//        // if the list is empty then set the no item text view
-//        if (listOfItems.isEmpty()) {
-//            mainBinding.noItemTextView.setVisibility(View.VISIBLE);
-//        }
-
+        // set the visibility of the card to GONE
         mainBinding.list.getChildAt(position).setVisibility(View.GONE);
         listOfItems.set(position, null);
 
+        // Checking items in the list
+        boolean isEmpty = true;
+        for (Item item : listOfItems) {
+            if (item != null) {
+                isEmpty = false;
+                break;
+            }
+        }
+
+        // if the list is empty then set the no item text view
+        if (isEmpty) {
+            mainBinding.noItemTextView.setVisibility(View.VISIBLE);
+        }
+
+        // Showing the deleted toast
         Toast.makeText(this, "Item deleted from list", Toast.LENGTH_SHORT).show();
     }
 
@@ -212,7 +212,9 @@ public class GalleryActivity extends AppCompatActivity {
         ItemCardBinding binding = ItemCardBinding.inflate(getLayoutInflater());
 
         // Binding the data
-        binding.imageView.setImageBitmap(item.image);
+        Glide.with(this)
+                .load(item.url)
+                .into(binding.imageView);
         binding.labelView.setText(item.label);
         binding.labelView.setBackgroundColor(item.color);
 
@@ -250,7 +252,7 @@ public class GalleryActivity extends AppCompatActivity {
         // To add all the items in the shared preferences
         for (int i = 1; i <= countOfItems; i++) {
             // make a new item
-            Item item = new Item(getBitmapFromString(preferences.getString(Constants.ITEM_IMAGE + i, "")),
+            Item item = new Item(preferences.getString(Constants.ITEM_URL + i, ""),
                     preferences.getInt(Constants.ITEM_COLOR + i, 0),
                     preferences.getString(Constants.ITEM_LABEL + i, ""));
 
@@ -280,7 +282,7 @@ public class GalleryActivity extends AppCompatActivity {
                 preferences.edit()
                         .putInt(Constants.ITEM_COLOR + itemCount, item.color)
                         .putString(Constants.ITEM_LABEL + itemCount, item.label)
-                        .putString(Constants.ITEM_IMAGE + itemCount, getStringFromBitmap(item.image))
+                        .putString(Constants.ITEM_URL + itemCount, item.url)
                         .apply();
             }
         }
@@ -288,28 +290,5 @@ public class GalleryActivity extends AppCompatActivity {
                 .putInt(Constants.COUNT_OF_ITEMS, itemCount)
                 .putBoolean(Constants.DIALOG_BOX_STATUS, isDialogBoxShowed)
                 .apply();
-    }
-
-    /**
-     * converts Bitmap picture into string which can be
-     * @param bitmapPicture bitmap image to be converted in string
-     */
-    private String getStringFromBitmap(Bitmap bitmapPicture) {
-        final int COMPRESSION_QUALITY = 100;
-        String encodedImage;
-        ByteArrayOutputStream byteArrayBitmapStream = new ByteArrayOutputStream();
-        bitmapPicture.compress(Bitmap.CompressFormat.PNG, COMPRESSION_QUALITY,
-                byteArrayBitmapStream);
-        byte[] b = byteArrayBitmapStream.toByteArray();
-        encodedImage = Base64.encodeToString(b, Base64.DEFAULT);
-        return encodedImage;
-    }
-
-    /**
-     * converts the String into Bitmap image
-     */
-    private Bitmap getBitmapFromString(String stringPicture) {
-        byte[] decodedString = Base64.decode(stringPicture, Base64.DEFAULT);
-        return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
     }
 }

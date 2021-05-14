@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -11,8 +12,13 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.streamliners.galleryapp.databinding.ChipColorBinding;
@@ -31,17 +37,18 @@ public class EditImageDialog {
 
     private boolean isCustomLabel;
     AlertDialog alertDialog;
-    private Bitmap image;
+    private String url;
 
     /**
      * To show the image data in the dialog box
-     * @param bitmap image
+     * @param url url of the image in cache
      * @param colors major colors in the image
      * @param labels labels of the image
      */
-    public void showData(Context context, Bitmap bitmap, Set<Integer> colors, List<String> labels, OnCompleteListener listener) {
+    public void showData(Context context, String url, Set<Integer> colors, List<String> labels, OnCompleteListener listener) {
         this.mContext = context;
         this.mListener = listener;
+        this.url = url;
 
         // Checking for the activity from its context and to inflate dialog's layout
         if (mContext instanceof GalleryActivity) {
@@ -58,7 +65,6 @@ public class EditImageDialog {
                 .setView(dialogBinding.getRoot())
                 .show();
 
-        this.image = bitmap;
         // make the dimensions input and progress indicator gone and image contents visible
         dialogBinding.title.setText("Edit Image");
         dialogBinding.inputDimensionsRoot.setVisibility(View.GONE);
@@ -66,13 +72,27 @@ public class EditImageDialog {
         dialogBinding.addImageRoot.setVisibility(View.VISIBLE);
 
         // set the image to the view
-        dialogBinding.imageView.setImageBitmap(bitmap);
+        Glide.with(mContext)
+                .asBitmap()
+                .load(url)
+                .into(new CustomTarget<Bitmap>() {
+                    @Override
+                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                        dialogBinding.imageView.setImageBitmap(resource);
 
-        inflateColorChips(colors);
-        inflateLabelChips(labels);
-        setupHideError();
-        handleCustomLabelInput();
-        handleAddImageEvent();
+                        // inflating chips
+                        inflateColorChips(colors);
+                        inflateLabelChips(labels);
+                        setupHideError();
+                        handleCustomLabelInput();
+                        handleAddImageEvent();
+                    }
+
+                    @Override
+                    public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                    }
+                });
     }
 
     /**
@@ -108,7 +128,7 @@ public class EditImageDialog {
                 int color = ((Chip) dialogBinding.colorChips.findViewById(colorChipId)).
                         getChipBackgroundColor().getDefaultColor();
 
-                mListener.OnImageEdited(new Item(image, color, label));
+                mListener.OnImageEdited(new Item(url, color, label));
 
                 alertDialog.dismiss();
 

@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.streamliners.galleryapp.databinding.ChipColorBinding;
@@ -31,9 +32,10 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
     private DialogAddImageBinding dialogBinding;
     private LayoutInflater inflater;
 
+    private String url;
+
     private boolean isCustomLabel;
     AlertDialog alertDialog;
-    private Bitmap image;
 
     /**
      * To inflate dialog's layout
@@ -135,18 +137,22 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
 
     /**
      * To show the image data in the dialog box
-     * @param bitmap image
+     * @param url url of the image in the cache
      * @param colors major colors in the image
      * @param labels labels of the image
      */
-    private void showData(Bitmap bitmap, Set<Integer> colors, List<String> labels) {
-        this.image = bitmap;
+    private void showData(String url, Set<Integer> colors, List<String> labels) {
+        // set the url of the image
+        this.url = url;
+
         // make the progress indicator gone and image contents visible
         dialogBinding.progressIndicatorRoot.setVisibility(View.GONE);
         dialogBinding.addImageRoot.setVisibility(View.VISIBLE);
 
         // set the image to the view
-        dialogBinding.imageView.setImageBitmap(bitmap);
+        Glide.with(mContext)
+                .load(url)
+                .into(dialogBinding.imageView);
 
         inflateColorChips(colors);
         inflateLabelChips(labels);
@@ -187,7 +193,7 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
                 int color = ((Chip) dialogBinding.colorChips.findViewById(colorChipId)).
                         getChipBackgroundColor().getDefaultColor();
 
-                mListener.OnImageAdded(new Item(image, color, label));
+                mListener.OnImageAdded(new Item(url, color, label));
 
                 alertDialog.dismiss();
 
@@ -269,8 +275,8 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
     }
 
     @Override
-    public void onFetched(Bitmap bitmap, Set<Integer> colors, List<String> labels) {
-        showData(bitmap, colors, labels);
+    public void onFetched(String url, Set<Integer> colors, List<String> labels) {
+        showData(url, colors, labels);
     }
 
     @Override

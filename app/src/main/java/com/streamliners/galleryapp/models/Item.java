@@ -7,18 +7,18 @@ import android.graphics.Bitmap;
  */
 public class Item {
 
-    public Bitmap image;
+    public String url;
     public int color;
     public String label;
 
     /**
      * To construct the object
-     * @param image image received
+     * @param url url of the image received
      * @param color color chose
      * @param label label chose
      */
-    public Item(Bitmap image, int color, String label) {
-        this.image = image;
+    public Item(String url, int color, String label) {
+        this.url = url;
         this.color = color;
         this.label = label;
     }

@@ -4,6 +4,7 @@ package com.streamliners.galleryapp;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,10 +22,15 @@ import com.google.mlkit.vision.label.ImageLabeler;
 import com.google.mlkit.vision.label.ImageLabeling;
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Helper class to fetch data
@@ -33,12 +39,13 @@ public class ItemHelper {
     private OnCompleteListener mListener;
     private Context mContext;
 
+    private String mUrl;
     private Bitmap mBitmap;
     private Set<Integer> mColors;
     private List<String> mLabels = new ArrayList<>();
 
-    private String rectangularImageUrl = "https://picsum.photos/%d/%d",
-            squareImageUrl = "https://picsum.photos/%d";
+    private String rectangularImageUrl = "https://picsum.photos/%d/%d?type=" + UUID.randomUUID(),
+            squareImageUrl = "https://picsum.photos/%d?type=" + UUID.randomUUID();
 
     /**
      * To fetch data for the rectangular image
@@ -67,12 +74,12 @@ public class ItemHelper {
         fetchImage(String.format(squareImageUrl, x));
     }
 
-    public void fetchData(Context context, Bitmap bitmap, OnCompleteListener listener) {
+    public void fetchData(Context context, String url, OnCompleteListener listener) {
         this.mListener = listener;
         this.mContext = context;
+        this.mUrl = url;
 
-        mBitmap = bitmap;
-        extractPaletteFromBitmap();
+        fetchImage(url);
     }
 
     /**
@@ -80,11 +87,10 @@ public class ItemHelper {
      * @param url url from which the image is to be fetched
      */
     private void fetchImage(String url) {
+        mUrl = url;
         Glide.with(mContext)
                 .asBitmap()
                 .load(url)
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .skipMemoryCache(true)
                 .into(new CustomTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
@@ -136,7 +142,7 @@ public class ItemHelper {
                             mLabels.add(imageLabel.getText());
                         }
 
-                        mListener.onFetched(mBitmap, mColors, mLabels);
+                        mListener.onFetched(mUrl, mColors, mLabels);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -172,7 +178,7 @@ public class ItemHelper {
      * Interface for the call backs when the requested data get the result
      */
     interface OnCompleteListener {
-        void onFetched(Bitmap bitmap, Set<Integer> colors, List<String> labels);
+        void onFetched(String url, Set<Integer> colors, List<String> labels);
         void onError(String error);
     }
 }
