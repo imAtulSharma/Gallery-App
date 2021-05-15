@@ -1,17 +1,14 @@
 package com.streamliners.galleryapp;
 
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.palette.graphics.Palette;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -22,10 +19,6 @@ import com.google.mlkit.vision.label.ImageLabeler;
 import com.google.mlkit.vision.label.ImageLabeling;
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,68 +26,92 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Helper class to fetch data
+ * Helper class to fetch data from internet
  */
 public class ItemHelper {
-    private OnCompleteListener mListener;
+    // context of the main activity
     private Context mContext;
+    // Listener to call the data is fetched
+    private OnCompleteListener mListener;
 
+    // url of the image
     private String mUrl;
+    // image in bitmap format (We need bitmap image for our machine learning model for colors and labels)
     private Bitmap mBitmap;
+    // set of major color in the image
     private Set<Integer> mColors;
+    // list of label of the image
     private List<String> mLabels = new ArrayList<>();
 
-    private String rectangularImageUrl = "https://picsum.photos/%d/%d?type=" + UUID.randomUUID(),
-            squareImageUrl = "https://picsum.photos/%d?type=" + UUID.randomUUID();
-
     /**
-     * To fetch data for the rectangular image
+     * To fetch image of the rectangular dimensions
      * @param context context of the activity
-     * @param x width of the image
-     * @param y height of the image
-     * @param listener listener for the call backs
+     * @param width width of the image
+     * @param height height of the image
+     * @param listener listener for the callbacks
      */
-    public void fetchData(Context context, int x, int y, OnCompleteListener listener) {
+    public void fetchData(Context context, int width, int height, OnCompleteListener listener) {
         this.mListener = listener;
         this.mContext = context;
 
-        fetchImage(String.format(rectangularImageUrl, x, y));
+        // url for the rectangular image
+        String rectangularImageUrl = "https://picsum.photos/%d/%d?type=" + UUID.randomUUID();
+
+        // to fetch image with the given url
+        fetchImage(String.format(rectangularImageUrl, width, height));
     }
 
     /**
-     * To fetch data for the square image
+     * To fetch image of the square dimensions
      * @param context context of the activity
-     * @param x width and height of the image
-     * @param listener listener for the call backs
+     * @param side width and height of the image
+     * @param listener listener for the callbacks
      */
-    public void fetchData(Context context, int x, OnCompleteListener listener) {
+    public void fetchData(Context context, int side, OnCompleteListener listener) {
         this.mListener = listener;
         this.mContext = context;
 
-        fetchImage(String.format(squareImageUrl, x));
+        // url for the square image
+        String squareImageUrl = "https://picsum.photos/%d?type=" + UUID.randomUUID();
+        
+        // to fetch image with the given url
+        fetchImage(String.format(squareImageUrl, side));
     }
 
+    /**
+     * To fetch image with the specified url
+     * @param context context of the activity
+     * @param url url of the image
+     * @param listener listener for the callbacks
+     */
     public void fetchData(Context context, String url, OnCompleteListener listener) {
         this.mListener = listener;
         this.mContext = context;
         this.mUrl = url;
 
+        // to fetch image with the given url
         fetchImage(url);
     }
 
     /**
-     * To fetch random image from the internet
+     * To fetch random image from the provided url
      * @param url url from which the image is to be fetched
      */
     private void fetchImage(String url) {
+        // setting the url
         mUrl = url;
+        
+        // fetching image using glide
         Glide.with(mContext)
                 .asBitmap()
                 .load(url)
                 .into(new CustomTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
+                        // set the bitmap image
                         mBitmap = bitmap;
+                        
+                        // to extract colors from the image
                         extractPaletteFromBitmap();
                     }
 
@@ -107,6 +124,7 @@ public class ItemHelper {
                     public void onLoadFailed(@Nullable Drawable errorDrawable) {
                         super.onLoadFailed(errorDrawable);
 
+                        // callback for the error
                         mListener.onError("Image load failed");
                     }
                 });
@@ -118,8 +136,10 @@ public class ItemHelper {
     private void extractPaletteFromBitmap() {
         Palette.from(mBitmap).generate(new Palette.PaletteAsyncListener() {
             public void onGenerated(Palette palette) {
+                // set the colors set with the filtered colors
                 mColors = getColorFromPalette(palette);
 
+                // to get labels for the image
                 getLabelsFromImage();
             }
         });
@@ -129,25 +149,30 @@ public class ItemHelper {
      * To get the labels from the given image
      */
     private void getLabelsFromImage() {
+        // creating object
         InputImage image = InputImage.fromBitmap(mBitmap, 0);
 
         // To use default options:
         ImageLabeler labeler = ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS);
 
+        // to process the image with our model
         labeler.process(image)
                 .addOnSuccessListener(new OnSuccessListener<List<ImageLabel>>() {
                     @Override
                     public void onSuccess(@NonNull List<ImageLabel> imageLabels) {
+                        // TODO: changes here and complete the class properly
                         for (ImageLabel imageLabel : imageLabels) {
                             mLabels.add(imageLabel.getText());
                         }
 
+                        // callback when all the data is fetched
                         mListener.onFetched(mUrl, mColors, mLabels);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        // giving callback for the error
                         mListener.onError(e.toString());
                     }
                 });
@@ -161,24 +186,39 @@ public class ItemHelper {
     private Set<Integer> getColorFromPalette(Palette palette) {
         Set<Integer> colors = new HashSet<>();
 
+        // adding the vibrant colors and default color is black
         colors.add(palette.getVibrantColor(0));
         colors.add(palette.getLightVibrantColor(0));
         colors.add(palette.getDarkVibrantColor(0));
 
+        // adding the muted colors and default color is black
         colors.add(palette.getMutedColor(0));
         colors.add(palette.getLightMutedColor(0));
         colors.add(palette.getDarkMutedColor(0));
 
+        // removing the black color
         colors.remove(0);
 
+        // returning the set of colors
         return colors;
     }
 
     /**
-     * Interface for the call backs when the requested data get the result
+     * Interface for the callbacks when the requested data get the result
      */
     interface OnCompleteListener {
+        /**
+         * when the data is successfully fetched 
+         * @param url url of the image
+         * @param colors colors in the image
+         * @param labels labels of the image
+         */
         void onFetched(String url, Set<Integer> colors, List<String> labels);
+
+        /**
+         * when error occurred due to any specific reason
+         * @param error error which is occurred
+         */
         void onError(String error);
     }
 }
