@@ -73,7 +73,7 @@ public class ItemHelper {
 
         // url for the square image
         String squareImageUrl = "https://picsum.photos/%d?type=" + UUID.randomUUID();
-        
+
         // to fetch image with the given url
         fetchImage(String.format(squareImageUrl, side));
     }
@@ -100,7 +100,7 @@ public class ItemHelper {
     private void fetchImage(String url) {
         // setting the url
         mUrl = url;
-        
+
         // fetching image using glide
         Glide.with(mContext)
                 .asBitmap()
@@ -110,7 +110,7 @@ public class ItemHelper {
                     public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
                         // set the bitmap image
                         mBitmap = bitmap;
-                        
+
                         // to extract colors from the image
                         extractPaletteFromBitmap();
                     }
@@ -160,7 +160,6 @@ public class ItemHelper {
                 .addOnSuccessListener(new OnSuccessListener<List<ImageLabel>>() {
                     @Override
                     public void onSuccess(@NonNull List<ImageLabel> imageLabels) {
-                        // TODO: changes here and complete the class properly
                         for (ImageLabel imageLabel : imageLabels) {
                             mLabels.add(imageLabel.getText());
                         }

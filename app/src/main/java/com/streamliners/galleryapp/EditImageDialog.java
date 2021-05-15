@@ -162,9 +162,6 @@ public class EditImageDialog {
 
                 // Dismiss the dialog box
                 alertDialog.dismiss();
-
-                // To set the screen orientation according to the user
-                ((GalleryActivity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
             }
         });
     }
@@ -257,7 +254,7 @@ public class EditImageDialog {
      */
     interface OnCompleteListener {
         /**
-         * When image has to be added after succesful editing in the list
+         * When image has to be added after successful editing in the list
          * @param item item of the image
          */
         void OnImageEdited(Item item);

@@ -154,7 +154,7 @@ public class GalleryActivity extends AppCompatActivity {
             // Change the dialog box appearance to true
             isDialogBoxShowed = true;
             // To set the screen orientation in portrait mode only
-            this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
 
         new AddImageDialog()
@@ -169,6 +169,9 @@ public class GalleryActivity extends AppCompatActivity {
                         mainBinding.noItemTextView.setVisibility(View.GONE);
                         // Inflate the layout for the
                         inflateViewForItem(item, mainBinding.list.getChildCount());
+
+                        // To set the screen orientation according to the user
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
                     }
 
                     @Override
@@ -178,6 +181,9 @@ public class GalleryActivity extends AppCompatActivity {
                                 .setTitle("Error")
                                 .setMessage(error)
                                 .show();
+
+                        // To set the screen orientation according to the user
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
                     }
                 });
     }

@@ -202,9 +202,6 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
 
                 // Dismiss the dialog box
                 alertDialog.dismiss();
-
-                // To set the screen orientation according to the user
-                ((GalleryActivity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
             }
         });
     }
@@ -331,19 +328,11 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
 
     @Override
     public void onError(String error) {
-        // TODO: only send the error
-        // To show the error and hide the loader
-        dialogBinding.linearProgressIndicator.setVisibility(View.GONE);
-        dialogBinding.progressSubtitle.setText(error);
+        // Callback when all the parameter are accepted
+        mListener.OnError(error);
 
-        // To make the dialog box cancelable
-        alertDialog.setCancelable(true);
-
-        // Set the dialog box appearance to false
-        ((GalleryActivity) mContext).isDialogBoxShowed = false;
-
-        // To set the screen orientation according to the user
-        ((GalleryActivity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
+        // Dismiss the dialog box
+        alertDialog.dismiss();
     }
 
     /**
