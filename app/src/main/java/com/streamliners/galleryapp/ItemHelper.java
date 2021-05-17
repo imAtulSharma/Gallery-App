@@ -113,7 +113,7 @@ public class ItemHelper {
                 // fetching image using glide
                 Glide.with(mContext)
                         .asBitmap()
-                        .load(url)
+                        .load(mUrl)
                         .into(new CustomTarget<Bitmap>() {
                             @Override
                             public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
