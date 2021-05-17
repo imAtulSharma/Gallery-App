@@ -3,6 +3,7 @@ package com.streamliners.galleryapp;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,6 +20,10 @@ import com.google.mlkit.vision.label.ImageLabeler;
 import com.google.mlkit.vision.label.ImageLabeling;
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -55,7 +60,7 @@ public class ItemHelper {
         this.mContext = context;
 
         // url for the rectangular image
-        String rectangularImageUrl = "https://picsum.photos/%d/%d?type=" + UUID.randomUUID();
+        String rectangularImageUrl = "https://picsum.photos/%d/%d";
 
         // to fetch image with the given url
         fetchImage(String.format(rectangularImageUrl, width, height));
@@ -72,7 +77,7 @@ public class ItemHelper {
         this.mContext = context;
 
         // url for the square image
-        String squareImageUrl = "https://picsum.photos/%d?type=" + UUID.randomUUID();
+        String squareImageUrl = "https://picsum.photos/%d";
 
         // to fetch image with the given url
         fetchImage(String.format(squareImageUrl, side));
@@ -98,36 +103,42 @@ public class ItemHelper {
      * @param url url from which the image is to be fetched
      */
     private void fetchImage(String url) {
-        // setting the url
-        mUrl = url;
+        // Fetching the redirected URL through new object
+        new RedirectedURL().fetchRedirectedURL(new RedirectedURL.OnCompleteListener() {
+            @Override
+            public void onFetched(String redirectedUrl) {
+                // setting the url
+                mUrl = redirectedUrl;
 
-        // fetching image using glide
-        Glide.with(mContext)
-                .asBitmap()
-                .load(url)
-                .into(new CustomTarget<Bitmap>() {
-                    @Override
-                    public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
-                        // set the bitmap image
-                        mBitmap = bitmap;
+                // fetching image using glide
+                Glide.with(mContext)
+                        .asBitmap()
+                        .load(url)
+                        .into(new CustomTarget<Bitmap>() {
+                            @Override
+                            public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
+                                // set the bitmap image
+                                mBitmap = bitmap;
 
-                        // to extract colors from the image
-                        extractPaletteFromBitmap();
-                    }
+                                // to extract colors from the image
+                                extractPaletteFromBitmap();
+                            }
 
-                    @Override
-                    public void onLoadCleared(@Nullable Drawable placeholder) {
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {
 
-                    }
+                            }
 
-                    @Override
-                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
-                        super.onLoadFailed(errorDrawable);
+                            @Override
+                            public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                                super.onLoadFailed(errorDrawable);
 
-                        // callback for the error
-                        mListener.onError("Image load failed");
-                    }
-                });
+                                // callback for the error
+                                mListener.onError("Image load failed");
+                            }
+                        });
+            }
+        }).execute(url);
     }
 
     /**
