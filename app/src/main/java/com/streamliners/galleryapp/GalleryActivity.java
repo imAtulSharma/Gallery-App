@@ -45,6 +45,13 @@ public class GalleryActivity extends AppCompatActivity {
         mainBinding = ActivityGalleryBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
 
+        // To set the dialog box status
+        if(savedInstanceState != null) {
+            if (savedInstanceState.getBoolean(Constants.DIALOG_BOX_STATUS, false)) {
+                showAddImageDialog();
+            }
+        }
+
         preferences = getPreferences(MODE_PRIVATE);
         getDataFromSharedPreferences();
 
@@ -275,11 +282,6 @@ public class GalleryActivity extends AppCompatActivity {
             listOfItems.add(item);
             inflateViewForItem(item, mainBinding.list.getChildCount());
         }
-
-        // To set the dialog box status
-        if (preferences.getBoolean(Constants.DIALOG_BOX_STATUS, false)) {
-            showAddImageDialog();
-        }
     }
 
     /**
@@ -305,6 +307,12 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putBoolean(Constants.DIALOG_BOX_STATUS, isDialogBoxShowed);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
 
@@ -324,7 +332,6 @@ public class GalleryActivity extends AppCompatActivity {
         }
         preferences.edit()
                 .putInt(Constants.COUNT_OF_ITEMS, itemCount)
-                .putBoolean(Constants.DIALOG_BOX_STATUS, isDialogBoxShowed)
                 .apply();
     }
 }
