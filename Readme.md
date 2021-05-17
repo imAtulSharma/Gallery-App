@@ -12,6 +12,8 @@ Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v1.
 - Use of Shared Preferences on configuration changes
 - Change screen orientation programmatically
 - Add Contextual menu to the views
+- Asynchronous Task (Background thread)
+- Get Redirection URL
 
 ## Previews of the application
 
