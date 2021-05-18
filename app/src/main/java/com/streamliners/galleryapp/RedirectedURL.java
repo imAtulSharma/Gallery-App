@@ -28,6 +28,12 @@ public class RedirectedURL extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... strings) {
+        try {
+            URL url = new URL(strings[0]);
+        } catch (Exception e) {
+            return strings[0];
+        }
+
         return getRedirectUrl(strings[0]);
     }
 

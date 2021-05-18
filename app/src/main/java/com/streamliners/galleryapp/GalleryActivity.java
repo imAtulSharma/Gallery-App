@@ -1,7 +1,9 @@
 package com.streamliners.galleryapp;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
@@ -25,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 public class GalleryActivity extends AppCompatActivity {
+    private static final int RC_PHOTO_PICKER = 1;
     // Binding of the layout
     private ActivityGalleryBinding mainBinding;
     // List of the items
@@ -62,6 +66,37 @@ public class GalleryActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Checking the result status
+        if (requestCode == RC_PHOTO_PICKER && resultCode == RESULT_OK) {
+            // Get URI from the intent
+            Uri selectedImageUri = data.getData();
+
+            // Fetching data using the helper class
+            new ItemHelper()
+                    .fetchData(this, selectedImageUri.toString(), new ItemHelper.OnCompleteListener() {
+                        @Override
+                        public void onFetched(String url, Set<Integer> colors, List<String> labels) {
+                            // To show the dialog
+                            showEditImageDialog(mainBinding.list.getChildCount(), url, colors, labels);
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            new MaterialAlertDialogBuilder(GalleryActivity.this)
+                                    .setTitle("Error")
+                                    .setMessage(error)
+                                    .show();
+                        }
+                    });
+        } else {
+            return;
+        }
+    }
+
     // Menu methods
 
     @Override
@@ -70,17 +105,20 @@ public class GalleryActivity extends AppCompatActivity {
         return true;
     }
 
-    // Contextual menu methods
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         // Check the option selected
         if (item.getItemId() == R.id.add_image) {
             showAddImageDialog();
             return true;
+        } else if (item.getItemId() == R.id.add_image_from_gallery) {
+            addImageFromGallery();
+            return true;
         }
         return false;
     }
+
+    // Contextual menu methods
 
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
@@ -150,7 +188,17 @@ public class GalleryActivity extends AppCompatActivity {
         Toast.makeText(this, "Item deleted from list", Toast.LENGTH_SHORT).show();
     }
 
-    // Show dialog methods
+    // add/edit image methods
+
+    /**
+     * To add image from the gallery
+     */
+    private void addImageFromGallery() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/jpg");
+        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+        startActivityForResult(Intent.createChooser(intent, "Complete action using"), RC_PHOTO_PICKER);
+    }
 
     /**
      * To show the dialog to add image
@@ -203,10 +251,14 @@ public class GalleryActivity extends AppCompatActivity {
                 .showDialog(this, url, colors, labels, new EditImageDialog.OnCompleteListener() {
                     @Override
                     public void OnImageEdited(Item item) {
-                        // Update the list and remove the card item from the layout
-                        listOfItems.set(position, item);
-                        mainBinding.list.removeViewAt(position);
-
+                        // Try to update the list if not then just add the item
+                        try {
+                            // Update the list and remove the card item from the layout
+                            listOfItems.set(position, item);
+                            mainBinding.list.removeViewAt(position);
+                        } catch(Exception e) {
+                            listOfItems.add(position, item);
+                        }
                         // Inflate the view to the specified position
                         inflateViewForItem(item, position);
                     }
