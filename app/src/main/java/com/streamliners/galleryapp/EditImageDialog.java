@@ -82,8 +82,11 @@ public class EditImageDialog {
                 .setView(dialogBinding.getRoot())
                 .show();
 
-        // Make the dimensions input and progress indicator gone and image contents visible
+        // Change the label and button text
         dialogBinding.title.setText("Edit Image");
+        dialogBinding.buttonAddImage.setText("Edit");
+
+        // Make the dimensions input and progress indicator gone and image contents visible
         dialogBinding.inputDimensionsRoot.setVisibility(View.GONE);
         dialogBinding.progressIndicatorRoot.setVisibility(View.GONE);
         dialogBinding.addImageRoot.setVisibility(View.VISIBLE);
