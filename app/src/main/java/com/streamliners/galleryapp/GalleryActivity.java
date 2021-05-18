@@ -1,14 +1,10 @@
 package com.streamliners.galleryapp;
 
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,15 +17,12 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
 import com.streamliners.galleryapp.databinding.ActivityGalleryBinding;
 import com.streamliners.galleryapp.databinding.ItemCardBinding;
 import com.streamliners.galleryapp.models.Item;
 
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -136,9 +129,6 @@ public class GalleryActivity extends AppCompatActivity {
         } else if (item.getItemId() == R.id.delete_item) {
             deleteItemFromList(selectedItemPosition);
             return true;
-        } else if (item.getItemId() == R.id.share_item) {
-            shareItem(selectedItemPosition);
-            return true;
         }
         return super.onContextItemSelected(item);
     }
@@ -196,53 +186,6 @@ public class GalleryActivity extends AppCompatActivity {
 
         // Showing the deleted toast
         Toast.makeText(this, "Item deleted from list", Toast.LENGTH_SHORT).show();
-    }
-
-    /**
-     * To share the bitmap of the particular item
-     * @param position position defined of the item
-     */
-    private void shareItem(int position) {
-        // Get the item of the position
-        Item item = listOfItems.get(position);
-
-        // Load the bitmap
-        Glide.with(this)
-                .asBitmap()
-                .load(item.url)
-                .into(new CustomTarget<Bitmap>() {
-                    @Override
-                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                        // Calling the intent to share the bitmap
-                        Bitmap icon = resource;
-                        Intent share = new Intent(Intent.ACTION_SEND);
-                        share.setType("image/jpeg");
-
-                        ContentValues values = new ContentValues();
-                        values.put(MediaStore.Images.Media.TITLE, "title");
-                        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-                        Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                                values);
-
-
-                        OutputStream outputStream;
-                        try {
-                            outputStream = getContentResolver().openOutputStream(uri);
-                            icon.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-                            outputStream.close();
-                        } catch (Exception e) {
-                            System.err.println(e.toString());
-                        }
-
-                        share.putExtra(Intent.EXTRA_STREAM, uri);
-                        startActivity(Intent.createChooser(share, "Share Image"));
-                    }
-
-                    @Override
-                    public void onLoadCleared(@Nullable Drawable placeholder) {
-
-                    }
-                });
     }
 
     // add/edit image methods
