@@ -198,16 +198,22 @@ public class GalleryActivity extends AppCompatActivity {
         Toast.makeText(this, "Item deleted from list", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * To share the bitmap of the particular item
+     * @param position position defined of the item
+     */
     private void shareItem(int position) {
         // Get the item of the position
         Item item = listOfItems.get(position);
 
+        // Load the bitmap
         Glide.with(this)
                 .asBitmap()
                 .load(item.url)
                 .into(new CustomTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                        // Calling the intent to share the bitmap
                         Bitmap icon = resource;
                         Intent share = new Intent(Intent.ACTION_SEND);
                         share.setType("image/jpeg");
@@ -219,11 +225,11 @@ public class GalleryActivity extends AppCompatActivity {
                                 values);
 
 
-                        OutputStream outstream;
+                        OutputStream outputStream;
                         try {
-                            outstream = getContentResolver().openOutputStream(uri);
-                            icon.compress(Bitmap.CompressFormat.JPEG, 100, outstream);
-                            outstream.close();
+                            outputStream = getContentResolver().openOutputStream(uri);
+                            icon.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                            outputStream.close();
                         } catch (Exception e) {
                             System.err.println(e.toString());
                         }
