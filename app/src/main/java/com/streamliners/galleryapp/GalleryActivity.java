@@ -45,7 +45,10 @@ public class GalleryActivity extends AppCompatActivity {
     // Request code for the permission
     private static final int PERMISSION_CODE = 1000;
 
-    Uri imageUri;
+    // For the image clicked through camera
+    private Uri imageUri;
+    // For Floating Action Buttons
+    private boolean flag = true;
 
     // Binding of the layout
     private ActivityGalleryBinding mainBinding;
@@ -66,6 +69,9 @@ public class GalleryActivity extends AppCompatActivity {
         // Inflate the main binding
         mainBinding = ActivityGalleryBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
+
+        // Setup FABs
+        setupFab();
 
         // To set the dialog box status
         if(savedInstanceState != null) {
@@ -312,21 +318,6 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     /**
-     * To open the camera to capture photo
-     */
-    private void openCamera() {
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, "New Picture");
-        values.put(MediaStore.Images.Media.DESCRIPTION, "From the camera");
-        imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
-        // Open camera intent
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-        startActivityForResult(intent, RC_PHOTO_CAPTURE);
-    }
-
-    /**
      * To add image from the gallery
      */
     private void addImageFromGallery() {
@@ -410,6 +401,86 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     // Utility methods
+
+    /**
+     * To setup the Floating Action Buttons
+     */
+    private void setupFab() {
+        // To setup Action FABs
+        setupFabActions();
+
+        // For the main FAB
+        mainBinding.fabMain.setOnClickListener(view -> {
+            if (flag) {
+                // Show all FAB
+                mainBinding.fabNetwork.show();
+                mainBinding.fabGallery.show();
+                mainBinding.fabCamera.show();
+
+                // Make transition through upward
+                mainBinding.fabNetwork.animate().translationY(-650);
+                mainBinding.fabGallery.animate().translationY(-450);
+                mainBinding.fabCamera.animate().translationY(-250);
+
+                // Rotating to 135 degree
+                mainBinding.fabMain.animate().rotation(135);
+
+                // Set the flag
+                flag = false;
+            } else {
+                // Hide FAB
+                mainBinding.fabNetwork.hide();
+                mainBinding.fabGallery.hide();
+                mainBinding.fabCamera.hide();
+
+                // Make transition to their original positions
+                mainBinding.fabNetwork.animate().translationY(0);
+                mainBinding.fabGallery.animate().translationY(0);
+                mainBinding.fabCamera.animate().translationY(0);
+
+                // Rotating to the original position
+                mainBinding.fabMain.animate().rotation(0);
+
+                // Set the flag
+                flag = true;
+            }
+        });
+    }
+
+    /**
+     * To setup actions for Floating action button
+     */
+    private void setupFabActions() {
+        // For camera button
+        mainBinding.fabCamera.setOnClickListener(view -> {
+            addImageFromCamera();
+        });
+
+        // For gallery button
+        mainBinding.fabGallery.setOnClickListener(view -> {
+            addImageFromGallery();
+        });
+
+        // For network button
+        mainBinding.fabNetwork.setOnClickListener(view -> {
+            addImageFromNetwork();
+        });
+    }
+
+    /**
+     * To open the camera to capture photo
+     */
+    private void openCamera() {
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "New Picture");
+        values.put(MediaStore.Images.Media.DESCRIPTION, "From the camera");
+        imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+        // Open camera intent
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        startActivityForResult(intent, RC_PHOTO_CAPTURE);
+    }
 
     /**
      * To inflate the view for the item to the specified position
