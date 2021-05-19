@@ -1,12 +1,15 @@
 package com.streamliners.galleryapp;
 
+import android.Manifest;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.ContextMenu;
@@ -35,7 +38,15 @@ import java.util.List;
 import java.util.Set;
 
 public class GalleryActivity extends AppCompatActivity {
+    // Request code for fetch image from gallery
     private static final int RC_PHOTO_PICKER = 1;
+    // Request code for fetch image from camera
+    private static final int RC_PHOTO_CAPTURE = 2;
+    // Request code for the permission
+    private static final int PERMISSION_CODE = 1000;
+
+    Uri imageUri;
+
     // Binding of the layout
     private ActivityGalleryBinding mainBinding;
     // List of the items
@@ -59,7 +70,7 @@ public class GalleryActivity extends AppCompatActivity {
         // To set the dialog box status
         if(savedInstanceState != null) {
             if (savedInstanceState.getBoolean(Constants.DIALOG_BOX_STATUS, false)) {
-                showAddImageDialog();
+                addImageFromNetwork();
             }
         }
 
@@ -99,8 +110,39 @@ public class GalleryActivity extends AppCompatActivity {
                                     .show();
                         }
                     });
+        } else if (requestCode == RC_PHOTO_CAPTURE && resultCode == RESULT_OK) {
+            // Fetching data using the helper class
+            new ItemHelper()
+                    .fetchData(this, imageUri.toString(), new ItemHelper.OnCompleteListener() {
+                        @Override
+                        public void onFetched(String url, Set<Integer> colors, List<String> labels) {
+                            // To show the dialog
+                            showEditImageDialog(mainBinding.list.getChildCount(), url, colors, labels);
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            new MaterialAlertDialogBuilder(GalleryActivity.this)
+                                    .setTitle("Error")
+                                    .setMessage(error)
+                                    .show();
+                        }
+                    });
         } else {
             return;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_CODE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    openCamera();
+                } else {
+                    Toast.makeText(this, "permission Denied...", Toast.LENGTH_SHORT).show();
+                }
+            }
         }
     }
 
@@ -115,12 +157,14 @@ public class GalleryActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         // Check the option selected
-        if (item.getItemId() == R.id.add_image) {
-            showAddImageDialog();
+        if (item.getItemId() == R.id.add_image_from_network) {
+            addImageFromNetwork();
             return true;
         } else if (item.getItemId() == R.id.add_image_from_gallery) {
             addImageFromGallery();
             return true;
+        } else if (item.getItemId() == R.id.add_image_from_camera) {
+            addImageFromCamera();
         }
         return false;
     }
@@ -248,6 +292,41 @@ public class GalleryActivity extends AppCompatActivity {
     // add/edit image methods
 
     /**
+     * To add image from the camera
+     */
+    private void addImageFromCamera() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                String[] permission = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+                requestPermissions(permission, PERMISSION_CODE);
+            }
+            else {
+                openCamera();
+            }
+        }
+        else {
+            openCamera();
+        }
+    }
+
+    /**
+     * To open the camera to capture photo
+     */
+    private void openCamera() {
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "New Picture");
+        values.put(MediaStore.Images.Media.DESCRIPTION, "From the camera");
+        imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+        // Open camera intent
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        startActivityForResult(intent, RC_PHOTO_CAPTURE);
+    }
+
+    /**
      * To add image from the gallery
      */
     private void addImageFromGallery() {
@@ -260,7 +339,7 @@ public class GalleryActivity extends AppCompatActivity {
     /**
      * To show the dialog to add image
      */
-    private void showAddImageDialog() {
+    private void addImageFromNetwork() {
         // Check for the orientation
         if (this.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
             // Change the dialog box appearance to true
@@ -353,6 +432,13 @@ public class GalleryActivity extends AppCompatActivity {
 
         // Add the card in the list
         mainBinding.list.addView(binding.getRoot(), position);
+
+        // If the list is empty then set the no item text view to visible
+        if (listOfItems.isEmpty()) {
+            mainBinding.noItemTextView.setVisibility(View.VISIBLE);
+        } else {
+            mainBinding.noItemTextView.setVisibility(View.GONE);
+        }
     }
 
     /**

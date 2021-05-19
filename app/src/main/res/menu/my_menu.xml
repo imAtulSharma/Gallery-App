@@ -2,14 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/add_image"
-        android:icon="@drawable/ic_add_image"
+    <item android:id="@+id/add_image_from_network"
+        android:icon="@drawable/ic_network"
         app:showAsAction="always"
-        android:title="@string/add_image"/>
+        android:title="@string/add_image_from_network"/>
 
     <item android:id="@+id/add_image_from_gallery"
-        android:icon="@drawable/ic_camera"
+        android:icon="@drawable/ic_gallery"
         app:showAsAction="always"
         android:title="@string/add_image_from_gallery"/>
+
+    <item android:id="@+id/add_image_from_camera"
+        android:icon="@drawable/ic_camera"
+        app:showAsAction="always"
+        android:title="@string/add_image_from_camera"/>
 
 </menu>
