@@ -1,7 +1,7 @@
 # Gallery App
 
 I have made an Gallery Application to add image and show using card view.<br>
-Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v3.0/app-debug.apk) for the application.
+Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v4.0/app-debug.apk) for the application.
 
 ## Features in the application
 
@@ -16,6 +16,7 @@ Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v3.
 - Get Redirection URL
 - Fetch image from mobile gallery
 - Share Image using intent
+- Floating Action Buttons menu
 
 ## Previews of the application
 
@@ -25,3 +26,8 @@ Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v3.
 <img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/06.PNG" alt="" width="231"><img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/07.PNG" alt="" width="231">
 <img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/08.PNG" alt="" width="231"><img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/09.PNG" alt="" width="231">
 <img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/10.PNG" alt="" width="231"><img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/11.PNG" alt="" width="231">
+<img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/12.PNG" alt="" width="231"><img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/13.PNG" alt="" width="231">
+<img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/14.PNG" alt="" width="231"><img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/15.PNG" alt="" width="231">
+<img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/16.PNG" alt="" width="231"><img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/17.PNG" alt="" width="231">
+<img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/18.PNG" alt="" width="231"><img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/19.PNG" alt="" width="231">
+<img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/20.PNG" alt="" width="231">
