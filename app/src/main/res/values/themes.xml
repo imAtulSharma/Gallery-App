@@ -24,4 +24,9 @@
     </style>
 
     <style name="CustomTitleTheme" parent="TextAppearance.MaterialComponents.Headline6"/>
+
+    <style name="customFabTheme">
+        <item name="tint">@color/white</item>
+        <item name="backgroundTint">@color/design_default_color_primary</item>
+    </style>
 </resources>
