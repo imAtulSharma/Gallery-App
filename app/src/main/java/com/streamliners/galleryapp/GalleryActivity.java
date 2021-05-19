@@ -406,51 +406,15 @@ public class GalleryActivity extends AppCompatActivity {
      * To setup the Floating Action Buttons
      */
     private void setupFab() {
-        // To setup Action FABs
-        setupFabActions();
-
         // For the main FAB
         mainBinding.fabMain.setOnClickListener(view -> {
             if (flag) {
-                // Show all FAB
-                mainBinding.fabNetwork.show();
-                mainBinding.fabGallery.show();
-                mainBinding.fabCamera.show();
-
-                // Make transition through upward
-                mainBinding.fabNetwork.animate().translationY(-650);
-                mainBinding.fabGallery.animate().translationY(-450);
-                mainBinding.fabCamera.animate().translationY(-250);
-
-                // Rotating to 135 degree
-                mainBinding.fabMain.animate().rotation(135);
-
-                // Set the flag
-                flag = false;
+                expandFab();
             } else {
-                // Hide FAB
-                mainBinding.fabNetwork.hide();
-                mainBinding.fabGallery.hide();
-                mainBinding.fabCamera.hide();
-
-                // Make transition to their original positions
-                mainBinding.fabNetwork.animate().translationY(0);
-                mainBinding.fabGallery.animate().translationY(0);
-                mainBinding.fabCamera.animate().translationY(0);
-
-                // Rotating to the original position
-                mainBinding.fabMain.animate().rotation(0);
-
-                // Set the flag
-                flag = true;
+                collapseFab();
             }
         });
-    }
 
-    /**
-     * To setup actions for Floating action button
-     */
-    private void setupFabActions() {
         // For camera button
         mainBinding.fabCamera.setOnClickListener(view -> {
             addImageFromCamera();
@@ -465,6 +429,42 @@ public class GalleryActivity extends AppCompatActivity {
         mainBinding.fabNetwork.setOnClickListener(view -> {
             addImageFromNetwork();
         });
+    }
+
+    private void expandFab() {
+        // Show all FAB
+        mainBinding.fabNetwork.show();
+        mainBinding.fabGallery.show();
+        mainBinding.fabCamera.show();
+
+        // Make transition through upward
+        mainBinding.fabNetwork.animate().translationY(-650);
+        mainBinding.fabGallery.animate().translationY(-450);
+        mainBinding.fabCamera.animate().translationY(-250);
+
+        // Rotating to 135 degree
+        mainBinding.fabMain.animate().rotation(135);
+
+        // Set the flag
+        flag = false;
+    }
+
+    private void collapseFab() {
+        // Hide FAB
+        mainBinding.fabNetwork.hide();
+        mainBinding.fabGallery.hide();
+        mainBinding.fabCamera.hide();
+
+        // Make transition to their original positions
+        mainBinding.fabNetwork.animate().translationY(0);
+        mainBinding.fabGallery.animate().translationY(0);
+        mainBinding.fabCamera.animate().translationY(0);
+
+        // Rotating to the original position
+        mainBinding.fabMain.animate().rotation(0);
+
+        // Set the flag
+        flag = true;
     }
 
     /**
