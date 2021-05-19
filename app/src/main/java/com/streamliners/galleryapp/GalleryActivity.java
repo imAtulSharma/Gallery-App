@@ -1,6 +1,7 @@
 package com.streamliners.galleryapp;
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -49,6 +50,7 @@ public class GalleryActivity extends AppCompatActivity {
     private Uri imageUri;
     // For Floating Action Buttons
     private boolean flag = true;
+    ActionBar actionBar;
 
     // Binding of the layout
     private ActivityGalleryBinding mainBinding;
@@ -69,6 +71,8 @@ public class GalleryActivity extends AppCompatActivity {
         // Inflate the main binding
         mainBinding = ActivityGalleryBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
+
+        actionBar = getActionBar();
 
         // Setup FABs
         setupFab();
@@ -417,21 +421,34 @@ public class GalleryActivity extends AppCompatActivity {
 
         // For camera button
         mainBinding.fabCamera.setOnClickListener(view -> {
+            collapseFab();
             addImageFromCamera();
         });
 
         // For gallery button
         mainBinding.fabGallery.setOnClickListener(view -> {
+            collapseFab();
             addImageFromGallery();
         });
 
         // For network button
         mainBinding.fabNetwork.setOnClickListener(view -> {
+            collapseFab();
             addImageFromNetwork();
         });
     }
 
+    /**
+     * To expand the Floating Action Button Menu
+     */
     private void expandFab() {
+        // Showing rectangle and set listener
+        mainBinding.rectangle.setVisibility(View.VISIBLE);
+        mainBinding.rectangle.animate().alpha(0.3f);
+        mainBinding.rectangle.setOnClickListener(v -> {
+            collapseFab();
+        });
+
         // Show all FAB
         mainBinding.fabNetwork.show();
         mainBinding.fabGallery.show();
@@ -449,7 +466,14 @@ public class GalleryActivity extends AppCompatActivity {
         flag = false;
     }
 
+    /**
+     * To collapse the Floating Action Button Menu
+     */
     private void collapseFab() {
+        // Hide the rectangle
+        mainBinding.rectangle.animate().alpha(0);
+        mainBinding.rectangle.setVisibility(View.GONE);
+
         // Hide FAB
         mainBinding.fabNetwork.hide();
         mainBinding.fabGallery.hide();
