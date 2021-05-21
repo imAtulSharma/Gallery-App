@@ -230,11 +230,10 @@ public class GalleryActivity extends AppCompatActivity {
      * @param position position defined of the item
      */
     private void shareItem(int position) {
-        // Get the item of the position
-        Item item = listOfItems.get(position);
+        // Get the screen shot of the card view
+        Bitmap icon = getShot(mainBinding.list.getChildAt(position));
 
         // Calling the intent to share the bitmap
-        Bitmap icon = getShot(mainBinding.list.getChildAt(position));
         Intent share = new Intent(Intent.ACTION_SEND);
         share.setType("image/jpeg");
 

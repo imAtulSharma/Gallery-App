@@ -1,7 +1,7 @@
 # Gallery App
 
 I have made an Gallery Application to add image and show using card view.<br>
-Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v4.0/app-debug.apk) for the application.
+Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v5.0/app-debug.apk) for the application.
 
 ## Features in the application
 
@@ -13,10 +13,11 @@ Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v4.
 - Change screen orientation programmatically
 - Add Contextual menu to the views
 - Asynchronous Task (Background thread)
-- Get Redirection URL
+- Get Redirection URL (without following the complete path)
 - Fetch image from mobile gallery
 - Share Image using intent
 - Floating Action Buttons menu
+- Get bitmap of any view
 
 ## Previews of the application
 
