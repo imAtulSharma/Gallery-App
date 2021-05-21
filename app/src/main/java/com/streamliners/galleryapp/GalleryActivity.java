@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -232,43 +233,29 @@ public class GalleryActivity extends AppCompatActivity {
         // Get the item of the position
         Item item = listOfItems.get(position);
 
-        // Load the bitmap
-        Glide.with(this)
-                .asBitmap()
-                .load(item.url)
-                .into(new CustomTarget<Bitmap>() {
-                    @Override
-                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                        // Calling the intent to share the bitmap
-                        Bitmap icon = resource;
-                        Intent share = new Intent(Intent.ACTION_SEND);
-                        share.setType("image/jpeg");
+        // Calling the intent to share the bitmap
+        Bitmap icon = getShot(mainBinding.list.getChildAt(position));
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setType("image/jpeg");
 
-                        ContentValues values = new ContentValues();
-                        values.put(MediaStore.Images.Media.TITLE, "title");
-                        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-                        Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                                values);
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "title");
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                values);
 
 
-                        OutputStream outputStream;
-                        try {
-                            outputStream = getContentResolver().openOutputStream(uri);
-                            icon.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-                            outputStream.close();
-                        } catch (Exception e) {
-                            System.err.println(e.toString());
-                        }
+        OutputStream outputStream;
+        try {
+            outputStream = getContentResolver().openOutputStream(uri);
+            icon.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            outputStream.close();
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
 
-                        share.putExtra(Intent.EXTRA_STREAM, uri);
-                        startActivity(Intent.createChooser(share, "Share Image"));
-                    }
-
-                    @Override
-                    public void onLoadCleared(@Nullable Drawable placeholder) {
-
-                    }
-                });
+        share.putExtra(Intent.EXTRA_STREAM, uri);
+        startActivity(Intent.createChooser(share, "Share Image"));
     }
 
     // add/edit image methods
@@ -377,6 +364,21 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     // Utility methods
+
+    /**
+     * To get the screen shot of the complete view
+     * @param v view for which the screen shot has to taken
+     * @return bitmap image of the complete view
+     */
+    public Bitmap getShot(View v) {
+        int height = v.getHeight();
+        int width = v.getWidth();
+        Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(b);
+        v.layout(0, 0 , v.getLayoutParams().width, v.getLayoutParams().height);
+        v.draw(c);
+        return b;
+    }
 
     /**
      * To setup the Floating Action Buttons
