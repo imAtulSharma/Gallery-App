@@ -367,17 +367,14 @@ public class GalleryActivity extends AppCompatActivity {
 
     /**
      * To get the screen shot of the complete view
-     * @param v view for which the screen shot has to taken
+     * @param view view for which the screen shot has to taken
      * @return bitmap image of the complete view
      */
-    public Bitmap getShot(View v) {
-        int height = v.getHeight();
-        int width = v.getWidth();
-        Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas c = new Canvas(b);
-        v.layout(0, 0 , v.getLayoutParams().width, v.getLayoutParams().height);
-        v.draw(c);
-        return b;
+    public Bitmap getShot(View view) {
+        view.setDrawingCacheEnabled(true);
+        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
+        view.setDrawingCacheEnabled(false);
+        return bitmap;
     }
 
     /**
