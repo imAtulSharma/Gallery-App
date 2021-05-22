@@ -95,7 +95,7 @@ public class ItemHelper {
         this.mUrl = url;
 
         // to fetch image with the given url
-        fetchImage(url);
+        fetchImageForEditing(url);
     }
 
     /**
@@ -144,6 +144,44 @@ public class ItemHelper {
                 mListener.onError(error);
             }
         }).execute(url);
+    }
+
+    /**
+     * To fetch image from the provided url for editing purpose
+     * No need for redirection link
+     * @param url url from which the image is to be fetched
+     */
+    private void fetchImageForEditing(String url) {
+        // setting the url
+        mUrl = url;
+
+        // fetching image using glide
+        Glide.with(mContext)
+                .asBitmap()
+                .load(mUrl)
+                .into(new CustomTarget<Bitmap>() {
+                    @Override
+                    public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
+                        // set the bitmap image
+                        mBitmap = bitmap;
+
+                        // to extract colors from the image
+                        extractPaletteFromBitmap();
+                    }
+
+                    @Override
+                    public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                    }
+
+                    @Override
+                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                        super.onLoadFailed(errorDrawable);
+
+                        // callback for the error
+                        mListener.onError("Image load failed");
+                    }
+                });
     }
 
     /**
