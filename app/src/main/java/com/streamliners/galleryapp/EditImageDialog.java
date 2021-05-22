@@ -1,7 +1,6 @@
 package com.streamliners.galleryapp;
 
 import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -113,7 +112,7 @@ public class EditImageDialog {
                         handleAddImageEvent();
 
                         // For auto parameters
-                        inflatePreSelectedParameters(item);
+                        preSelectParameters(item);
                     }
 
                     @Override
@@ -197,7 +196,11 @@ public class EditImageDialog {
 
     // Utility methods
 
-    private void inflatePreSelectedParameters(Item item) {
+    /**
+     * To auto select the parameters for the item
+     * @param item
+     */
+    private void preSelectParameters(Item item) {
         // For color chips
         for (int i = 0; i < dialogBinding.colorChips.getChildCount(); i++) {
             int color = ((Chip) dialogBinding.colorChips.getChildAt(i)).getChipBackgroundColor().getDefaultColor();
@@ -218,9 +221,11 @@ public class EditImageDialog {
             }
         }
 
-        if (isCustomLabel) {
+        if (isCustomLabel && !item.label.isEmpty()) {
             ((Chip) dialogBinding.labelChips.getChildAt((dialogBinding.labelChips.getChildCount())-1)).setChecked(true);
             dialogBinding.customLabelInput.getEditText().setText(item.label);
+        } else {
+            isCustomLabel = false;
         }
     }
 

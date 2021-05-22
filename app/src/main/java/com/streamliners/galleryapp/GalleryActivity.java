@@ -179,12 +179,12 @@ public class GalleryActivity extends AppCompatActivity {
      * @param position position defined of the item
      */
     private void editItemInList(int position) {
-        // Get the item of the position
-        selectedItem = listOfItems.get(position);
+        // Get the URL of item of the position
+        String url = listOfItems.get(position).url;
 
         // Fetching data using the helper class
         new ItemHelper()
-                .fetchData(this, selectedItem.url, new ItemHelper.OnCompleteListener() {
+                .fetchData(this, url, new ItemHelper.OnCompleteListener() {
                     @Override
                     public void onFetched(String url, Set<Integer> colors, List<String> labels) {
                         showEditImageDialog(position, url, colors, labels);
@@ -338,6 +338,13 @@ public class GalleryActivity extends AppCompatActivity {
      * To show dialog to edit the image
      */
     private void showEditImageDialog(int position, String url, Set<Integer> colors, List<String> labels) {
+        // Get the item of the position
+        try {
+            selectedItem = listOfItems.get(position);
+        } catch(Exception exception) {
+            selectedItem = new Item(url, 0, "");
+        }
+
         new EditImageDialog()
                 .showDialog(this, selectedItem, colors, labels, new EditImageDialog.OnCompleteListener() {
                     @Override
