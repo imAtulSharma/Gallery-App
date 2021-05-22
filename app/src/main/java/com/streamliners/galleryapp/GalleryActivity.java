@@ -61,6 +61,8 @@ public class GalleryActivity extends AppCompatActivity {
     public boolean isDialogBoxShowed;
     // Selected item position in the list
     private int selectedItemPosition;
+    // For contextual options
+    private Item selectedItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -177,12 +179,12 @@ public class GalleryActivity extends AppCompatActivity {
      * @param position position defined of the item
      */
     private void editItemInList(int position) {
-        // Get the item of the position
-        Item item = listOfItems.get(position);
+        // Get the URL of item of the position
+        String url = listOfItems.get(position).url;
 
         // Fetching data using the helper class
         new ItemHelper()
-                .fetchData(this, item.url, new ItemHelper.OnCompleteListener() {
+                .fetchData(this, url, new ItemHelper.OnCompleteListener() {
                     @Override
                     public void onFetched(String url, Set<Integer> colors, List<String> labels) {
                         showEditImageDialog(position, url, colors, labels);
@@ -336,8 +338,15 @@ public class GalleryActivity extends AppCompatActivity {
      * To show dialog to edit the image
      */
     private void showEditImageDialog(int position, String url, Set<Integer> colors, List<String> labels) {
+        // Get the item of the position
+        try {
+            selectedItem = listOfItems.get(position);
+        } catch(Exception exception) {
+            selectedItem = new Item(url, 0, "");
+        }
+
         new EditImageDialog()
-                .showDialog(this, url, colors, labels, new EditImageDialog.OnCompleteListener() {
+                .showDialog(this, selectedItem, colors, labels, new EditImageDialog.OnCompleteListener() {
                     @Override
                     public void OnImageEdited(Item item) {
                         // Try to update the list if not then just add the item
