@@ -138,6 +138,11 @@ public class ItemHelper {
                             }
                         });
             }
+
+            @Override
+            public void onError(String error) {
+                mListener.onError(error);
+            }
         }).execute(url);
     }
 

@@ -1,6 +1,7 @@
 package com.streamliners.galleryapp;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -28,12 +29,6 @@ public class RedirectedURL extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... strings) {
-        try {
-            URL url = new URL(strings[0]);
-        } catch (Exception e) {
-            return strings[0];
-        }
-
         return getRedirectUrl(strings[0]);
     }
 
@@ -41,7 +36,6 @@ public class RedirectedURL extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String s) {
         mListener.onFetched(s);
     }
-
 
     // Utility methods
 
@@ -57,22 +51,25 @@ public class RedirectedURL extends AsyncTask<String, Void, String> {
 
         try {
             urlTmp = new URL(url);
-        } catch (MalformedURLException e1) {
-            e1.printStackTrace();
+        } catch (MalformedURLException malformedURLException) {
+            return url;
         }
 
         try {
             connection = (HttpURLConnection) urlTmp.openConnection();
-        } catch (IOException e) {
-            e.printStackTrace();
+            // To unfollow the redirection link
+            connection.setInstanceFollowRedirects(false);
+        } catch (IOException ioException) {
+            mListener.onError(ioException.toString());
         }
         try {
+            assert connection != null;
             connection.getResponseCode();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ioException) {
+            mListener.onError(ioException.toString());
         }
 
-        redUrl = connection.getURL().toString();
+        redUrl = connection.getHeaderField(6);
         connection.disconnect();
 
         return redUrl;
@@ -87,5 +84,10 @@ public class RedirectedURL extends AsyncTask<String, Void, String> {
          * @param redirectedUrl the redirected url
          */
         void onFetched(String redirectedUrl);
+
+        /**
+         * When error occurred
+         */
+        void onError(String error);
     }
 }
