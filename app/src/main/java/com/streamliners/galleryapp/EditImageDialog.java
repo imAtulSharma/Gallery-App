@@ -1,7 +1,6 @@
 package com.streamliners.galleryapp;
 
 import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -50,14 +49,14 @@ public class EditImageDialog {
 
     /**
      * To show the image data in the dialog box
-     * @param url url of the image in cache
+     * @param item item to be edited
      * @param colors major colors in the image
      * @param labels labels of the image
      */
-    public void showDialog(Context context, String url, Set<Integer> colors, List<String> labels, OnCompleteListener listener) {
+    public void showDialog(Context context, Item item, Set<Integer> colors, List<String> labels, OnCompleteListener listener) {
         this.mContext = context;
         this.mListener = listener;
-        this.url = url;
+        this.url = item.url;
 
         // Checking for the activity from its context and to inflate dialog's layout
         if (mContext instanceof GalleryActivity) {
@@ -107,9 +106,13 @@ public class EditImageDialog {
                         // Setup hiding error
                         setupHideError();
 
+
                         // Handling events
                         handleCustomLabelInput();
                         handleAddImageEvent();
+
+                        // For auto parameters
+                        preSelectParameters(item);
                     }
 
                     @Override
@@ -192,6 +195,39 @@ public class EditImageDialog {
     }
 
     // Utility methods
+
+    /**
+     * To auto select the parameters for the item
+     * @param item
+     */
+    private void preSelectParameters(Item item) {
+        // For color chips
+        for (int i = 0; i < dialogBinding.colorChips.getChildCount(); i++) {
+            int color = ((Chip) dialogBinding.colorChips.getChildAt(i)).getChipBackgroundColor().getDefaultColor();
+            if (item.color == color) {
+                ((Chip) dialogBinding.colorChips.getChildAt(i)).setChecked(true);
+                break;
+            }
+        }
+
+        isCustomLabel = true;
+        // For label chips
+        for (int i = 0; i < dialogBinding.labelChips.getChildCount(); i++) {
+            String label = ((Chip) dialogBinding.labelChips.getChildAt(i)).getText().toString();
+            if (item.label.equals(label)) {
+                isCustomLabel = false;
+                ((Chip) dialogBinding.labelChips.getChildAt(i)).setChecked(true);
+                break;
+            }
+        }
+
+        if (isCustomLabel && !item.label.isEmpty()) {
+            ((Chip) dialogBinding.labelChips.getChildAt((dialogBinding.labelChips.getChildCount())-1)).setChecked(true);
+            dialogBinding.customLabelInput.getEditText().setText(item.label);
+        } else {
+            isCustomLabel = false;
+        }
+    }
 
     /**
      * To hide the error when text change of the width and height fields
