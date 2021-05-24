@@ -29,6 +29,8 @@ import java.util.Set;
  * Represents the class to show a add image dialog
  */
 public class AddImageDialog implements ItemHelper.OnCompleteListener {
+    // For the application object
+    private MyApp app;
     // Context of the main activity
     private Context mContext;
     // Listener to call for image addition
@@ -55,6 +57,8 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
     public void showDialog(Context context, OnCompleteListener listener) {
         this.mContext = context;
         this.mListener = listener;
+
+        app = (MyApp) mContext.getApplicationContext();
 
         // Checking for the activity from its context and to inflate dialog's layout
         if (mContext instanceof GalleryActivity) {
@@ -94,8 +98,10 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
         // Set the url of the image
         this.url = url;
 
-        // Make the progress indicator gone and image contents visible
-        dialogBinding.progressIndicatorRoot.setVisibility(View.GONE);
+        // Hide the loader
+        app.hideLoadingDialog();
+
+        // Make the image contents visible
         dialogBinding.addImageRoot.setVisibility(View.VISIBLE);
 
         // Set the image to the image view in binding
@@ -140,9 +146,9 @@ public class AddImageDialog implements ItemHelper.OnCompleteListener {
                 // Hiding keyboard
                 hideKeyboard();
 
-                // make the input dialog gone and progress indicator visible
+                // make the input dialog gone and loader visible
                 dialogBinding.inputDimensionsRoot.setVisibility(View.GONE);
-                dialogBinding.progressIndicatorRoot.setVisibility(View.VISIBLE);
+                app.showLoadingDialog(mContext);
 
                 // To fetch square image
                 if (width.isEmpty()) {

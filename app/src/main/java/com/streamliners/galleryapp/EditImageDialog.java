@@ -84,9 +84,8 @@ public class EditImageDialog {
         // Change the label and button text
         dialogBinding.title.setText("Edit Image");
 
-        // Make the dimensions input and progress indicator gone and image contents visible
+        // Make the dimensions input gone and image contents visible
         dialogBinding.inputDimensionsRoot.setVisibility(View.GONE);
-        dialogBinding.progressIndicatorRoot.setVisibility(View.GONE);
         dialogBinding.addImageRoot.setVisibility(View.VISIBLE);
 
         // Get the image to the view as bitmap
