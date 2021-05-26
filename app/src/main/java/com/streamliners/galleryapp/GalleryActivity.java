@@ -7,8 +7,6 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,12 +22,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
 import com.streamliners.galleryapp.databinding.ActivityGalleryBinding;
 import com.streamliners.galleryapp.databinding.ItemCardBinding;
+import com.streamliners.galleryapp.helpers.ItemHelper;
 import com.streamliners.galleryapp.models.Item;
 
 import java.io.OutputStream;
@@ -105,7 +102,7 @@ public class GalleryActivity extends AppCompatActivity {
             new ItemHelper()
                     .fetchData(this, selectedImageUri.toString(), new ItemHelper.OnCompleteListener() {
                         @Override
-                        public void onFetched(String url, Set<Integer> colors, List<String> labels) {
+                        public void onSuccess(String url, Set<Integer> colors, List<String> labels) {
                             // To show the dialog
                             showEditImageDialog(mainBinding.list.getChildCount(), url, colors, labels);
                         }
@@ -123,7 +120,7 @@ public class GalleryActivity extends AppCompatActivity {
             new ItemHelper()
                     .fetchData(this, imageUri.toString(), new ItemHelper.OnCompleteListener() {
                         @Override
-                        public void onFetched(String url, Set<Integer> colors, List<String> labels) {
+                        public void onSuccess(String url, Set<Integer> colors, List<String> labels) {
                             // To show the dialog
                             showEditImageDialog(mainBinding.list.getChildCount(), url, colors, labels);
                         }
@@ -186,7 +183,7 @@ public class GalleryActivity extends AppCompatActivity {
         new ItemHelper()
                 .fetchData(this, url, new ItemHelper.OnCompleteListener() {
                     @Override
-                    public void onFetched(String url, Set<Integer> colors, List<String> labels) {
+                    public void onSuccess(String url, Set<Integer> colors, List<String> labels) {
                         showEditImageDialog(position, url, colors, labels);
                     }
 
@@ -303,10 +300,10 @@ public class GalleryActivity extends AppCompatActivity {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
 
-        new AddImageDialog()
-                .showDialog(this, new AddImageDialog.OnCompleteListener() {
+        new ImageDialog()
+                .showDialog(this, new ImageDialog.OnCompleteListener() {
                     @Override
-                    public void OnImageAdded(Item item) {
+                    public void OnImageAddedSuccess(Item item) {
                         // Set the dialog box appearance to false
                         isDialogBoxShowed = false;
                         // Adding the item in the list
@@ -345,10 +342,10 @@ public class GalleryActivity extends AppCompatActivity {
             selectedItem = new Item(url, 0, "");
         }
 
-        new EditImageDialog()
-                .showDialog(this, selectedItem, colors, labels, new EditImageDialog.OnCompleteListener() {
+        new ImageDialog()
+                .showDialog(this, selectedItem, new ImageDialog.OnCompleteListener() {
                     @Override
-                    public void OnImageEdited(Item item) {
+                    public void OnImageAddedSuccess(Item item) {
                         // Try to update the list if not then just add the item
                         try {
                             // Update the list and remove the card item from the layout

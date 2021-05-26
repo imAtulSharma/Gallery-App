@@ -1,5 +1,6 @@
 package com.streamliners.galleryapp;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -8,6 +9,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
@@ -23,17 +25,24 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.streamliners.galleryapp.databinding.ChipColorBinding;
 import com.streamliners.galleryapp.databinding.ChipLabelBinding;
 import com.streamliners.galleryapp.databinding.DialogAddImageBinding;
+import com.streamliners.galleryapp.helpers.ItemHelper;
+import com.streamliners.galleryapp.helpers.MachineLearningModelHelper;
 import com.streamliners.galleryapp.models.Item;
 
 import java.util.List;
 import java.util.Set;
 
-public class EditImageDialog {
+/**
+ * Represents the class to show a add image dialog
+ */
+public class ImageDialog implements ItemHelper.OnCompleteListener {
+    // For the application object
+    private MyApp app;
     // Context of the main activity
     private Context mContext;
-    // Listener to call the image updating
-    private EditImageDialog.OnCompleteListener mListener;
-    // Binding of the dialog box
+    // Listener to call for image addition
+    private OnCompleteListener mListener;
+    // Binding of the dialog view
     private DialogAddImageBinding dialogBinding;
     // Inflater to inflate the layouts
     private LayoutInflater inflater;
@@ -48,15 +57,55 @@ public class EditImageDialog {
     // Showing the data methods
 
     /**
-     * To show the image data in the dialog box
-     * @param item item to be edited
-     * @param colors major colors in the image
-     * @param labels labels of the image
+     * To inflate dialog's layout and then show the dialog inflated
+     * @param context context of the main activity
+     * @param listener listener for the callbacks
      */
-    public void showDialog(Context context, Item item, Set<Integer> colors, List<String> labels, OnCompleteListener listener) {
+    public void showDialog(Context context, OnCompleteListener listener) {
         this.mContext = context;
         this.mListener = listener;
-        this.url = item.url;
+
+        app = (MyApp) mContext.getApplicationContext();
+
+        // Checking for the activity from its context and to inflate dialog's layout
+        if (mContext instanceof GalleryActivity) {
+            // Initialising the inflater
+            inflater = ((GalleryActivity) mContext).getLayoutInflater();
+            
+            // Initialising the dialog binding
+            dialogBinding = DialogAddImageBinding.inflate(inflater);
+        } else {
+            // Dismiss the dialog
+            alertDialog.dismiss();
+            
+            // Call the listener for error
+            mListener.OnError("Cast Exception");
+            
+            // And return the function
+            return;
+        }
+
+        // Creating and showing the dialog box and set to non cancellable
+        alertDialog = new MaterialAlertDialogBuilder(mContext, R.style.CustomDialogTheme)
+                .setCancelable(false)
+                .setView(dialogBinding.getRoot())
+                .show();
+
+        // To handle events
+        handleDimensionsInput();
+    }
+
+    /**
+     * To show the dialog for editing purpose
+     * @param context context of the main activity
+     * @param item item ro be edited
+     * @param listener listener for the callbacks
+     */
+    public void showDialog(Context context, Item item, OnCompleteListener listener) {
+        this.mContext = context;
+        this.mListener = listener;
+
+        app = (MyApp) mContext.getApplicationContext();
 
         // Checking for the activity from its context and to inflate dialog's layout
         if (mContext instanceof GalleryActivity) {
@@ -76,57 +125,142 @@ public class EditImageDialog {
             return;
         }
 
-        // Creating and showing the dialog box
+        // Creating and showing the dialog box and set to non cancellable
         alertDialog = new MaterialAlertDialogBuilder(mContext, R.style.CustomDialogTheme)
+                .setCancelable(false)
                 .setView(dialogBinding.getRoot())
                 .show();
 
-        // Change the label and button text
-        dialogBinding.title.setText("Edit Image");
+        // Show the loader
+        app.showLoadingDialog(mContext);
 
-        // Make the dimensions input gone and image contents visible
-        dialogBinding.inputDimensionsRoot.setVisibility(View.GONE);
-        dialogBinding.addImageRoot.setVisibility(View.VISIBLE);
+        Glide.with(mContext)
+                .asBitmap()
+                .load(item.url)
+                .into(new CustomTarget<Bitmap>() {
+                    @Override
+                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                        new MachineLearningModelHelper()
+                                .getData(resource, new MachineLearningModelHelper.OnCompleteListener() {
+                                    @Override
+                                    public void onSuccess(Set<Integer> colors, List<String> labels) {
+                                        // To show the data in dialog box
+                                        showData(item.url, colors, labels);
+                                    }
 
-        // Get the image to the view as bitmap
+                                    @Override
+                                    public void onError(String error) {
+                                        mListener.OnError(error);
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onLoadCleared(@Nullable Drawable placeholder) {
+                        mListener.OnError("Image load failed");
+                    }
+                });
+
+        // Set the preselected parameters in chips
+//        preSelectParameters(item);
+    }
+
+    /**
+     * To inflate dialog's layout for editing purpose and then show the dialog inflated
+     * @param url url of the image in the cache
+     * @param colors major colors in the image
+     * @param labels labels of the image
+     */
+    private void showData(String url, Set<Integer> colors, List<String> labels) {
+        // Set the url of the image
+        this.url = url;
+
+        // Inflating all the other stuffs in the binding
+        inflateColorChips(colors);
+        inflateLabelChips(labels);
+
+        // Handling events
+        handleCustomLabelInput();
+        handleAddImageEvent();
+
+        // To set the image to the image view in binding
         Glide.with(mContext)
                 .asBitmap()
                 .load(url)
                 .into(new CustomTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                        // Set the image to the dialog
+                        // Here setting the image to the view
                         dialogBinding.imageView.setImageBitmap(resource);
-
-                        // Inflating chips
-                        inflateColorChips(colors);
-                        inflateLabelChips(labels);
-
-                        // Setup hiding error
-                        setupHideError();
-
-
-                        // Handling events
-                        handleCustomLabelInput();
-                        handleAddImageEvent();
-
-                        // For auto parameters
-                        preSelectParameters(item);
                     }
 
                     @Override
                     public void onLoadCleared(@Nullable Drawable placeholder) {
-
+                        mListener.OnError("Image load failed");
                     }
                 });
-    }
 
+        // Hide the loader
+        app.hideLoadingDialog();
+
+        // Make the image contents visible
+        dialogBinding.addImageRoot.setVisibility(View.VISIBLE);
+    }
+    
     // Handling Events methods
+    
+    /**
+     * To handle the dimensions work
+     */
+    private void handleDimensionsInput() {
+        // Show the text fields
+        dialogBinding.inputDimensionsRoot.setVisibility(View.VISIBLE);
+
+        // Listener to the fetch image button
+        dialogBinding.buttonFetchImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Setup the error hider for the text fields
+                setupHideError();
+
+                // getting width and height from the text fields
+                String width = dialogBinding.widthTextView.getEditText().getText().toString().trim();
+                String height = dialogBinding.heightTextView.getEditText().getText().toString().trim();
+
+                // Guard Code
+                // showing error(s) if there is no dimensions input
+                if (width.isEmpty() && height.isEmpty()) {
+                    // set the error to the text field
+                    dialogBinding.widthTextView.setError("Enter at least on parameter");
+                    return;
+                }
+
+                // Hiding keyboard
+                hideKeyboard();
+
+                // make the input dialog gone and loader visible
+                dialogBinding.inputDimensionsRoot.setVisibility(View.GONE);
+                app.showLoadingDialog(mContext);
+
+                // To fetch square image
+                if (width.isEmpty()) {
+                    fetchRandomImage(Integer.parseInt(height));
+                } else if (height.isEmpty()) {
+                    fetchRandomImage(Integer.parseInt(width));
+                }
+                // To fetch Rectangular image
+                else{
+                    fetchRandomImage(Integer.parseInt(width), Integer.parseInt(height));
+                }
+            }
+        });
+    }
 
     /**
      * To handle the situation when the image is added
      */
     private void handleAddImageEvent() {
+        // Set the listener for the button
         dialogBinding.buttonAddImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -162,7 +296,7 @@ public class EditImageDialog {
                         getChipBackgroundColor().getDefaultColor();
 
                 // Callback when all the parameter are accepted
-                mListener.OnImageEdited(new Item(url, color, label));
+                mListener.OnImageAddedSuccess(new Item(url, color, label));
 
                 // Dismiss the dialog box
                 alertDialog.dismiss();
@@ -193,11 +327,32 @@ public class EditImageDialog {
         });
     }
 
+    // Image fetching methods
+    
+    /**
+     * To fetch any rectangle image
+     * @param width width of the image
+     * @param height height of the image
+     */
+    private void fetchRandomImage(int width, int height) {
+        new ItemHelper()
+                .fetchData(mContext, width, height, this);
+    }
+
+    /**
+     * To fetch any square image
+     * @param side side of the square image
+     */
+    private void fetchRandomImage(int side) {
+        new ItemHelper()
+                .fetchData(mContext, side, this);
+    }
+
     // Utility methods
 
     /**
      * To auto select the parameters for the item
-     * @param item
+     * @param item item for which the parameters are needed
      */
     private void preSelectParameters(Item item) {
         // For color chips
@@ -226,6 +381,14 @@ public class EditImageDialog {
         } else {
             isCustomLabel = false;
         }
+    }
+    
+    /**
+     * To hide the keyboard after taking input
+     */
+    private void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(dialogBinding.title.getWindowToken(), 0);
     }
 
     /**
@@ -259,7 +422,7 @@ public class EditImageDialog {
     }
 
     // Inflating methods
-
+    
     /**
      * To inflate the labels in the chips
      * @param labels labels of the image
@@ -286,15 +449,32 @@ public class EditImageDialog {
         }
     }
 
+    // Implementing methods of callbacks for image fetching
+
+    @Override
+    public void onSuccess(String url, Set<Integer> colors, List<String> labels) {
+        // To show the dialog box with the data
+        showData(url, colors, labels);
+    }
+
+    @Override
+    public void onError(String error) {
+        // Callback when all the parameter are accepted
+        mListener.OnError(error);
+
+        // Dismiss the dialog box
+        alertDialog.dismiss();
+    }
+
     /**
      * Callbacks for the dialog box completion
      */
     interface OnCompleteListener {
         /**
-         * When image has to be added after successful editing in the list
+         * When image has to be added in the list successfully
          * @param item item of the image
          */
-        void OnImageEdited(Item item);
+        void OnImageAddedSuccess(Item item);
 
         /**
          * When error occurs for the specified reasons
