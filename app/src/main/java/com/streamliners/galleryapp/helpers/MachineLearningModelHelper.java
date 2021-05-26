@@ -103,6 +103,11 @@ public class MachineLearningModelHelper {
         // removing the black color
         colors.remove(0);
 
+        // If no color that means there was only black color that's why again adding it
+        if (colors.isEmpty()) {
+            colors.add(0);
+        }
+
         // returning the set of colors
         return colors;
     }
