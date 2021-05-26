@@ -145,7 +145,7 @@ public class ImageDialog implements ItemHelper.OnCompleteListener {
                                     @Override
                                     public void onSuccess(Set<Integer> colors, List<String> labels) {
                                         // To show the data in dialog box
-                                        showData(item.url, colors, labels);
+                                        showData(item, item.url, colors, labels);
                                     }
 
                                     @Override
@@ -171,13 +171,18 @@ public class ImageDialog implements ItemHelper.OnCompleteListener {
      * @param colors major colors in the image
      * @param labels labels of the image
      */
-    private void showData(String url, Set<Integer> colors, List<String> labels) {
+    private void showData(Item item, String url, Set<Integer> colors, List<String> labels) {
         // Set the url of the image
         this.url = url;
 
         // Inflating all the other stuffs in the binding
         inflateColorChips(colors);
         inflateLabelChips(labels);
+
+        // Set the preselected parameters for the item
+        if (item != null) {
+            preSelectParameters(item);
+        }
 
         // Handling events
         handleCustomLabelInput();
@@ -454,7 +459,7 @@ public class ImageDialog implements ItemHelper.OnCompleteListener {
     @Override
     public void onSuccess(String url, Set<Integer> colors, List<String> labels) {
         // To show the dialog box with the data
-        showData(url, colors, labels);
+        showData(null, url, colors, labels);
     }
 
     @Override
