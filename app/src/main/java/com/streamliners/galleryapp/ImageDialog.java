@@ -157,12 +157,8 @@ public class ImageDialog implements ItemHelper.OnCompleteListener {
 
                     @Override
                     public void onLoadCleared(@Nullable Drawable placeholder) {
-                        mListener.OnError("Image load failed");
                     }
                 });
-
-        // Set the preselected parameters in chips
-//        preSelectParameters(item);
     }
 
     /**
@@ -201,7 +197,6 @@ public class ImageDialog implements ItemHelper.OnCompleteListener {
 
                     @Override
                     public void onLoadCleared(@Nullable Drawable placeholder) {
-                        mListener.OnError("Image load failed");
                     }
                 });
 
