@@ -98,43 +98,11 @@ public class GalleryActivity extends AppCompatActivity {
             // Get URI from the intent
             Uri selectedImageUri = data.getData();
 
-            // Fetching data using the helper class
-            new ItemHelper()
-                    .fetchData(this, selectedImageUri.toString(), new ItemHelper.OnCompleteListener() {
-                        @Override
-                        public void onSuccess(String url, Set<Integer> colors, List<String> labels) {
-                            // To show the dialog
-                            showEditImageDialog(mainBinding.list.getChildCount(), url, colors, labels);
-                        }
-
-                        @Override
-                        public void onError(String error) {
-                            new MaterialAlertDialogBuilder(GalleryActivity.this)
-                                    .setTitle("Error")
-                                    .setMessage(error)
-                                    .show();
-                        }
-                    });
+            // To show the dialog
+            showImageDialog(mainBinding.list.getChildCount(), selectedImageUri.toString());
         } else if (requestCode == RC_PHOTO_CAPTURE && resultCode == RESULT_OK) {
-            // Fetching data using the helper class
-            new ItemHelper()
-                    .fetchData(this, imageUri.toString(), new ItemHelper.OnCompleteListener() {
-                        @Override
-                        public void onSuccess(String url, Set<Integer> colors, List<String> labels) {
-                            // To show the dialog
-                            showEditImageDialog(mainBinding.list.getChildCount(), url, colors, labels);
-                        }
-
-                        @Override
-                        public void onError(String error) {
-                            new MaterialAlertDialogBuilder(GalleryActivity.this)
-                                    .setTitle("Error")
-                                    .setMessage(error)
-                                    .show();
-                        }
-                    });
-        } else {
-            return;
+            // To show the dialog
+            showImageDialog(mainBinding.list.getChildCount(), imageUri.toString());
         }
     }
 
@@ -176,25 +144,8 @@ public class GalleryActivity extends AppCompatActivity {
      * @param position position defined of the item
      */
     private void editItemInList(int position) {
-        // Get the URL of item of the position
-        String url = listOfItems.get(position).url;
-
-        // Fetching data using the helper class
-        new ItemHelper()
-                .fetchData(this, url, new ItemHelper.OnCompleteListener() {
-                    @Override
-                    public void onSuccess(String url, Set<Integer> colors, List<String> labels) {
-                        showEditImageDialog(position, url, colors, labels);
-                    }
-
-                    @Override
-                    public void onError(String error) {
-                        new MaterialAlertDialogBuilder(GalleryActivity.this)
-                                .setTitle("Error")
-                                .setMessage(error)
-                                .show();
-                    }
-                });
+        // Show dialog for image editing
+        showImageDialog(position, listOfItems.get(position).url);
     }
 
     /**
@@ -259,7 +210,7 @@ public class GalleryActivity extends AppCompatActivity {
         startActivity(Intent.createChooser(share, "Share Image"));
     }
 
-    // add/edit image methods
+    // add image methods
 
     /**
      * To add image from the camera
@@ -335,9 +286,10 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     /**
-     * To show dialog to edit the image
+     * To show dialog for the image already in storage
+     * For: Camera, Device Storage, Edit purpose
      */
-    private void showEditImageDialog(int position, String url, Set<Integer> colors, List<String> labels) {
+    private void showImageDialog(int position, String url) {
         // Get the item of the position
         try {
             selectedItem = listOfItems.get(position);
@@ -371,19 +323,7 @@ public class GalleryActivity extends AppCompatActivity {
                 });
     }
 
-    // Utility methods
-
-    /**
-     * To get the screen shot of the complete view
-     * @param view view for which the screen shot has to taken
-     * @return bitmap image of the complete view
-     */
-    public Bitmap getShot(View view) {
-        view.setDrawingCacheEnabled(true);
-        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
-        view.setDrawingCacheEnabled(false);
-        return bitmap;
-    }
+    // Floating action buttons methods
 
     /**
      * To setup the Floating Action Buttons
@@ -470,6 +410,20 @@ public class GalleryActivity extends AppCompatActivity {
         flag = true;
     }
 
+    // Utility methods
+
+    /**
+     * To get the screen shot of the complete view
+     * @param view view for which the screen shot has to taken
+     * @return bitmap image of the complete view
+     */
+    public Bitmap getShot(View view) {
+        view.setDrawingCacheEnabled(true);
+        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
+        view.setDrawingCacheEnabled(false);
+        return bitmap;
+    }
+
     /**
      * To open the camera to capture photo
      */
@@ -552,6 +506,8 @@ public class GalleryActivity extends AppCompatActivity {
             inflateViewForItem(item, mainBinding.list.getChildCount());
         }
     }
+
+    // GSON parsing methods
 
     /**
      * To get the JSON for the item
