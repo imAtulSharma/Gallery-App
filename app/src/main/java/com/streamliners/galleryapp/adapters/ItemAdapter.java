@@ -54,7 +54,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         // Binding the data to the views
         Glide.with(mContext).asBitmap().load(item.url).into(holder.cardBinding.imageView);
         holder.cardBinding.labelView.setText(item.label);
-        holder.cardBinding.cardView.setCardBackgroundColor(item.color);
+        holder.cardBinding.labelView.setBackgroundColor(item.color);
     }
 
     @Override
