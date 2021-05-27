@@ -100,7 +100,7 @@
                 android:id="@+id/inputDimensionsRoot"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="visible"
+                android:visibility="gone"
                 app:constraint_referenced_ids="message,width_text_view,height_text_view,button_fetch_image"
                 app:layout_constraintBottom_toTopOf="parent"
                 app:layout_constraintEnd_toStartOf="parent"

@@ -1,37 +1,22 @@
-package com.streamliners.galleryapp;
+package com.streamliners.galleryapp.helpers;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.palette.graphics.Palette;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.mlkit.vision.common.InputImage;
-import com.google.mlkit.vision.label.ImageLabel;
-import com.google.mlkit.vision.label.ImageLabeler;
-import com.google.mlkit.vision.label.ImageLabeling;
-import com.google.mlkit.vision.label.defaults.ImageLabelerOptions;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
-import java.util.UUID;
 
 /**
- * Helper class to fetch data from internet
+ * Helper class to fetch data for an item
  */
 public class ItemHelper {
     // context of the main activity
@@ -41,12 +26,6 @@ public class ItemHelper {
 
     // url of the image
     private String mUrl;
-    // image in bitmap format (We need bitmap image for our machine learning model for colors and labels)
-    private Bitmap mBitmap;
-    // set of major color in the image
-    private Set<Integer> mColors;
-    // list of label of the image
-    private List<String> mLabels = new ArrayList<>();
 
     /**
      * To fetch image of the rectangular dimensions
@@ -63,7 +42,7 @@ public class ItemHelper {
         String rectangularImageUrl = "https://picsum.photos/%d/%d";
 
         // to fetch image with the given url
-        fetchImage(String.format(rectangularImageUrl, width, height));
+        fetchImage(String.format(Locale.getDefault(), rectangularImageUrl, width, height));
     }
 
     /**
@@ -80,7 +59,7 @@ public class ItemHelper {
         String squareImageUrl = "https://picsum.photos/%d";
 
         // to fetch image with the given url
-        fetchImage(String.format(squareImageUrl, side));
+        fetchImage(String.format(Locale.getDefault(), squareImageUrl, side));
     }
 
     /**
@@ -104,7 +83,8 @@ public class ItemHelper {
      */
     private void fetchImage(String url) {
         // Fetching the redirected URL through new object
-        new RedirectedURL().fetchRedirectedURL(new RedirectedURL.OnCompleteListener() {
+        new RedirectedUrlHelper()
+                .fetchRedirectedURL(new RedirectedUrlHelper.OnCompleteListener() {
             @Override
             public void onFetched(String redirectedUrl) {
                 // setting the url
@@ -117,11 +97,18 @@ public class ItemHelper {
                         .into(new CustomTarget<Bitmap>() {
                             @Override
                             public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
-                                // set the bitmap image
-                                mBitmap = bitmap;
+                                new MachineLearningModelHelper()
+                                        .getData(bitmap, new MachineLearningModelHelper.OnCompleteListener() {
+                                            @Override
+                                            public void onSuccess(Set<Integer> colors, List<String> labels) {
+                                                mListener.onSuccess(mUrl, colors, labels);
+                                            }
 
-                                // to extract colors from the image
-                                extractPaletteFromBitmap();
+                                            @Override
+                                            public void onError(String error) {
+                                                mListener.onError(error);
+                                            }
+                                        });
                             }
 
                             @Override
@@ -162,11 +149,18 @@ public class ItemHelper {
                 .into(new CustomTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
-                        // set the bitmap image
-                        mBitmap = bitmap;
+                        new MachineLearningModelHelper()
+                                .getData(bitmap, new MachineLearningModelHelper.OnCompleteListener() {
+                                    @Override
+                                    public void onSuccess(Set<Integer> colors, List<String> labels) {
+                                        mListener.onSuccess(mUrl, colors, labels);
+                                    }
 
-                        // to extract colors from the image
-                        extractPaletteFromBitmap();
+                                    @Override
+                                    public void onError(String error) {
+                                        mListener.onError(error);
+                                    }
+                                });
                     }
 
                     @Override
@@ -185,88 +179,16 @@ public class ItemHelper {
     }
 
     /**
-     * To extract palette from the bitmap
-     */
-    private void extractPaletteFromBitmap() {
-        Palette.from(mBitmap).generate(new Palette.PaletteAsyncListener() {
-            public void onGenerated(Palette palette) {
-                // set the colors set with the filtered colors
-                mColors = getColorFromPalette(palette);
-
-                // to get labels for the image
-                getLabelsFromImage();
-            }
-        });
-    }
-
-    /**
-     * To get the labels from the given image
-     */
-    private void getLabelsFromImage() {
-        // creating object
-        InputImage image = InputImage.fromBitmap(mBitmap, 0);
-
-        // To use default options:
-        ImageLabeler labeler = ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS);
-
-        // to process the image with our model
-        labeler.process(image)
-                .addOnSuccessListener(new OnSuccessListener<List<ImageLabel>>() {
-                    @Override
-                    public void onSuccess(@NonNull List<ImageLabel> imageLabels) {
-                        for (ImageLabel imageLabel : imageLabels) {
-                            mLabels.add(imageLabel.getText());
-                        }
-
-                        // callback when all the data is fetched
-                        mListener.onFetched(mUrl, mColors, mLabels);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // giving callback for the error
-                        mListener.onError(e.toString());
-                    }
-                });
-    }
-
-    /**
-     * To get the colors from the palette
-     * @param palette palette from which the colors have to be extracted
-     * @return  set of all the colors extracted from the palette
-     */
-    private Set<Integer> getColorFromPalette(Palette palette) {
-        Set<Integer> colors = new HashSet<>();
-
-        // adding the vibrant colors and default color is black
-        colors.add(palette.getVibrantColor(0));
-        colors.add(palette.getLightVibrantColor(0));
-        colors.add(palette.getDarkVibrantColor(0));
-
-        // adding the muted colors and default color is black
-        colors.add(palette.getMutedColor(0));
-        colors.add(palette.getLightMutedColor(0));
-        colors.add(palette.getDarkMutedColor(0));
-
-        // removing the black color
-        colors.remove(0);
-
-        // returning the set of colors
-        return colors;
-    }
-
-    /**
      * Interface for the callbacks when the requested data get the result
      */
-    interface OnCompleteListener {
+    public interface OnCompleteListener {
         /**
          * when the data is successfully fetched 
          * @param url url of the image
          * @param colors colors in the image
          * @param labels labels of the image
          */
-        void onFetched(String url, Set<Integer> colors, List<String> labels);
+        void onSuccess(String url, Set<Integer> colors, List<String> labels);
 
         /**
          * when error occurred due to any specific reason
