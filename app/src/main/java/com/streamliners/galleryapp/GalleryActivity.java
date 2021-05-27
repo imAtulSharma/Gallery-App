@@ -54,8 +54,6 @@ public class GalleryActivity extends AppCompatActivity {
     // Shared preferences
     private SharedPreferences preferences;
 
-    // Dialog box is showed or not
-    public boolean isDialogBoxShowed;
     // Selected item position in the list
     private int selectedItemPosition;
     // For contextual options
@@ -71,13 +69,6 @@ public class GalleryActivity extends AppCompatActivity {
 
         // Setup FABs
         setupFab();
-
-        // To set the dialog box status
-        if(savedInstanceState != null) {
-            if (savedInstanceState.getBoolean(Constants.DIALOG_BOX_STATUS, false)) {
-                addImageFromNetwork();
-            }
-        }
 
         preferences = getPreferences(MODE_PRIVATE);
         getDataFromSharedPreferences();
@@ -246,20 +237,13 @@ public class GalleryActivity extends AppCompatActivity {
      * To show the dialog to add image
      */
     private void addImageFromNetwork() {
-        // Check for the orientation
-        if (this.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-            // Change the dialog box appearance to true
-            isDialogBoxShowed = true;
-            // To set the screen orientation in portrait mode only
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        }
+        // To set the screen orientation locked
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 
         new ImageDialog()
                 .showDialog(this, new ImageDialog.OnCompleteListener() {
                     @Override
                     public void OnImageAddedSuccess(Item item) {
-                        // Set the dialog box appearance to false
-                        isDialogBoxShowed = false;
                         // Adding the item in the list
                         listOfItems.add(item);
                         // Make the no item text view invisible
@@ -273,7 +257,6 @@ public class GalleryActivity extends AppCompatActivity {
 
                     @Override
                     public void OnError(String error) {
-                        isDialogBoxShowed = false;
                         new MaterialAlertDialogBuilder(GalleryActivity.this)
                                 .setTitle("Error")
                                 .setMessage(error)
@@ -290,6 +273,9 @@ public class GalleryActivity extends AppCompatActivity {
      * For: Camera, Device Storage, Edit purpose
      */
     private void showImageDialog(int position, String url) {
+        // To set the screen orientation locked
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
+
         // Get the item of the position
         try {
             selectedItem = listOfItems.get(position);
@@ -311,6 +297,9 @@ public class GalleryActivity extends AppCompatActivity {
                         }
                         // Inflate the view to the specified position
                         inflateViewForItem(item, position);
+
+                        // To set the screen orientation according to the user
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
                     }
 
                     @Override
@@ -319,6 +308,9 @@ public class GalleryActivity extends AppCompatActivity {
                                 .setTitle("Error")
                                 .setMessage(error)
                                 .show();
+
+                        // To set the screen orientation according to the user
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
                     }
                 });
     }
@@ -529,12 +521,6 @@ public class GalleryActivity extends AppCompatActivity {
         Gson json = new Gson();
 
         return json.fromJson(string, Item.class);
-    }
-
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putBoolean(Constants.DIALOG_BOX_STATUS, isDialogBoxShowed);
-        super.onSaveInstanceState(outState);
     }
 
     @Override
