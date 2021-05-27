@@ -28,13 +28,20 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     private final Context mContext;
 
     /**
+     * Listener for the call backs
+     */
+    private OnListSizeChangeListener mListener;
+
+    /**
      * To initialize the object with...
      * @param context context of the activity
      * @param items list of the items
+     * @param listener listener for the callbacks
      */
-    public ItemAdapter(Context context, List<Item> items) {
+    public ItemAdapter(Context context, List<Item> items, OnListSizeChangeListener listener) {
         this.mContext = context;
         this.mItemList = items;
+        this.mListener = listener;
     }
 
     @NonNull
@@ -59,6 +66,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
 
     @Override
     public int getItemCount() {
+        mListener.onListSizeChanges(mItemList.size());
         return mItemList.size();
     }
 
@@ -77,5 +85,15 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
 
             cardBinding = itemCardBinding;
         }
+    }
+
+    /**
+     * List size changing callbacks
+     */
+    public interface OnListSizeChangeListener {
+        /**
+         * When list has no objects
+         */
+        void onListSizeChanges(int size);
     }
 }

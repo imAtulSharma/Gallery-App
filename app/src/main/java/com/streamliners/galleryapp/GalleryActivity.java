@@ -20,10 +20,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
+import com.streamliners.galleryapp.adapters.ItemAdapter;
 import com.streamliners.galleryapp.databinding.ActivityGalleryBinding;
 import com.streamliners.galleryapp.databinding.ItemCardBinding;
 import com.streamliners.galleryapp.helpers.ItemHelper;
@@ -53,11 +55,11 @@ public class GalleryActivity extends AppCompatActivity {
     private List<Item> listOfItems = new ArrayList<>();
     // Shared preferences
     private SharedPreferences preferences;
+    // adapter for the list view
+    private ItemAdapter adapter;
 
     // Selected item position in the list
     private int selectedItemPosition;
-    // For contextual options
-    private Item selectedItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,11 +75,8 @@ public class GalleryActivity extends AppCompatActivity {
         preferences = getPreferences(MODE_PRIVATE);
         getDataFromSharedPreferences();
 
-        // Check whether the list is empty or not
-        if (listOfItems.isEmpty()) {
-            // Show the no items text view
-            mainBinding.noItemTextView.setVisibility(View.VISIBLE);
-        }
+        // Setup the recycler view for the items list
+        setupRecyclerView();
     }
 
     @Override
@@ -99,6 +98,7 @@ public class GalleryActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case PERMISSION_CODE: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -244,12 +244,9 @@ public class GalleryActivity extends AppCompatActivity {
                 .showDialog(this, new ImageDialog.OnCompleteListener() {
                     @Override
                     public void OnImageAddedSuccess(Item item) {
-                        // Adding the item in the list
+                        // Add in the list and notify the adapter
                         listOfItems.add(item);
-                        // Make the no item text view invisible
-                        mainBinding.noItemTextView.setVisibility(View.GONE);
-                        // Inflate the layout for the
-                        inflateViewForItem(item, mainBinding.list.getChildCount());
+                        adapter.notifyDataSetChanged();
 
                         // To set the screen orientation according to the user
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
@@ -277,26 +274,27 @@ public class GalleryActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 
         // Get the item of the position
-        try {
-            selectedItem = listOfItems.get(position);
-        } catch(Exception exception) {
-            selectedItem = new Item(url, 0, "");
-        }
+        // For contextual options
+        Item selectedItem = new Item(url, 0, "");
 
         new ImageDialog()
                 .showDialog(this, selectedItem, new ImageDialog.OnCompleteListener() {
                     @Override
                     public void OnImageAddedSuccess(Item item) {
-                        // Try to update the list if not then just add the item
-                        try {
-                            // Update the list and remove the card item from the layout
-                            listOfItems.set(position, item);
-                            mainBinding.list.removeViewAt(position);
-                        } catch(Exception e) {
-                            listOfItems.add(position, item);
-                        }
-                        // Inflate the view to the specified position
-                        inflateViewForItem(item, position);
+//                        // Try to update the list if not then just add the item
+//                        try {
+//                            // Update the list and remove the card item from the layout
+//                            listOfItems.set(position, item);
+//                            mainBinding.list.removeViewAt(position);
+//                        } catch(Exception e) {
+//                            listOfItems.add(position, item);
+//                        }
+//                        // Inflate the view to the specified position
+//                        inflateViewForItem(item, position);
+
+                        // Add in the list and notify the adapter
+                        listOfItems.add(item);
+                        adapter.notifyDataSetChanged();
 
                         // To set the screen orientation according to the user
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
@@ -405,6 +403,29 @@ public class GalleryActivity extends AppCompatActivity {
     // Utility methods
 
     /**
+     * To setup recycler for the list of items
+     */
+    private void setupRecyclerView() {
+        // Initializing adapter for the list view
+        adapter = new ItemAdapter(this, listOfItems, new ItemAdapter.OnListSizeChangeListener() {
+            @Override
+            public void onListSizeChanges(int size) {
+                if (size == 0) {
+                    mainBinding.noItemTextView.setVisibility(View.VISIBLE);
+                    return;
+                }
+                mainBinding.noItemTextView.setVisibility(View.GONE);
+            }
+        });
+
+        // Setup the layout manager for the recycler view
+        mainBinding.list.setLayoutManager(new LinearLayoutManager(this));
+
+        // Set the adapter to the list view
+        mainBinding.list.setAdapter(adapter);
+    }
+
+    /**
      * To get the screen shot of the complete view
      * @param view view for which the screen shot has to taken
      * @return bitmap image of the complete view
@@ -495,7 +516,7 @@ public class GalleryActivity extends AppCompatActivity {
 
             // Add the item in the list and inflate the item in the view
             listOfItems.add(item);
-            inflateViewForItem(item, mainBinding.list.getChildCount());
+//            inflateViewForItem(item, mainBinding.list.getChildCount());
         }
     }
 
