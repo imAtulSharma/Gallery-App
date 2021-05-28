@@ -167,7 +167,7 @@ public class GalleryActivity extends AppCompatActivity {
      */
     private void editItemInList(int position) {
         // Show dialog for image editing
-        showImageDialog(listOfItems.get(position));
+        showImageDialog(adapter.visibleItemsList.get(position));
     }
 
     /**
@@ -177,7 +177,7 @@ public class GalleryActivity extends AppCompatActivity {
     private void deleteItemFromList(int position) {
         // Remove the item from the list and notify the adapter
         listOfItems.remove(position);
-        adapter.notifyItemRemoved(position);
+        adapter.delete(position);
 
         // Showing the deleted toast
         Toast.makeText(this, "Item Deleted!", Toast.LENGTH_SHORT).show();
@@ -263,7 +263,7 @@ public class GalleryActivity extends AppCompatActivity {
                     public void OnImageAddedSuccess(Item item) {
                         // Add in the list and notify the adapter
                         listOfItems.add(item);
-                        adapter.notifyDataSetChanged();
+                        adapter.add(item);
 
                         // To set the screen orientation according to the user
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
@@ -297,13 +297,13 @@ public class GalleryActivity extends AppCompatActivity {
                         if (selectedItem.label == null) {
                             // Add in the list and notify the adapter
                             listOfItems.add(item);
-                            adapter.notifyDataSetChanged();
+                            adapter.add(item);
 
                             // Showing the adding toast
                             Toast.makeText(GalleryActivity.this, "Item Added!", Toast.LENGTH_SHORT).show();
                         } else {
-                            listOfItems.set(adapter.index, item);
-                            adapter.notifyItemChanged(adapter.index);
+                            listOfItems.set(listOfItems.indexOf(selectedItem), item);
+                            adapter.edit(adapter.index, item);
 
                             // Showing the editing toast
                             Toast.makeText(GalleryActivity.this, "Item Edited!", Toast.LENGTH_SHORT).show();

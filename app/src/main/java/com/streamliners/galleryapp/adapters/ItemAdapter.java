@@ -32,7 +32,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     /**
      * List of the visible items
      */
-    private final List<Item> visibleItemsList;
+    public final List<Item> visibleItemsList;
     /**
      * Context of the activity for inflating purpose
      */
@@ -121,6 +121,36 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         Collections.sort(visibleItemsList, (o1, o2) -> o1.label.compareTo(o2.label));
 
         notifyDataSetChanged();
+    }
+
+    // Notify methods
+
+    /**
+     * To notify the adapter for the item added
+     * @param item item to be added
+     */
+    public void add(Item item){
+        visibleItemsList.add(item);
+        notifyItemInserted(visibleItemsList.size()-1);
+    }
+
+    /**
+     * To notify the adapter for the item deletion
+     * @param position index of the item to be deleted
+     */
+    public void delete(int position){
+        visibleItemsList.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    /**
+     * To notify the adapter for the item edition
+     * @param position index of the item to be edit
+     * @param item edited(changed) item
+     */
+    public void edit(int position, Item item){
+        visibleItemsList.set(position, item);
+        notifyItemChanged(position);
     }
 
     /**
