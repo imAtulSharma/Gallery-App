@@ -385,7 +385,7 @@ public class GalleryActivity extends AppCompatActivity {
                 mainBinding.noItemTextView.setVisibility(View.VISIBLE);
                 return;
             }
-            mainBinding.noItemTextView.setVisibility(View.GONE);
+            mainBinding.noItemTextView.setVisibility(View.INVISIBLE);
         });
 
         // Setup the layout manager for the recycler view
