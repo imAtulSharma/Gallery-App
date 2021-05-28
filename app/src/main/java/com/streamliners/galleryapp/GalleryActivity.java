@@ -11,10 +11,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -116,13 +118,16 @@ public class GalleryActivity extends AppCompatActivity {
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         // Check for the menu item selected
         if (item.getItemId() == R.id.edit_item) {
-            editItemInList(selectedItemPosition);
+            Toast.makeText(this, "edit " + listOfItems.get(adapter.index).label, Toast.LENGTH_SHORT).show();
+//            editItemInList(selectedItemPosition);
             return true;
         } else if (item.getItemId() == R.id.delete_item) {
-            deleteItemFromList(selectedItemPosition);
+            Toast.makeText(this, "delete " + listOfItems.get(adapter.index).label, Toast.LENGTH_SHORT).show();
+//            deleteItemFromList(selectedItemPosition);
             return true;
         } else if (item.getItemId() == R.id.share_item) {
-            shareItem(selectedItemPosition);
+            Toast.makeText(this, "share " + listOfItems.get(adapter.index).label, Toast.LENGTH_SHORT).show();
+            shareItem(adapter.index);
             return true;
         }
         return super.onContextItemSelected(item);
@@ -172,6 +177,7 @@ public class GalleryActivity extends AppCompatActivity {
      */
     private void shareItem(int position) {
         // Inflate layout for the item to be shared
+        ItemCardBinding binding = ItemCardBinding.inflate(getLayoutInflater());
         ItemCardBinding binding = ItemCardBinding.bind(mainBinding.list.getChildAt(position));
 
         // Get the screen shot of the card view

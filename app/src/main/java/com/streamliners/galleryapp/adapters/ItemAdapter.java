@@ -1,13 +1,18 @@
 package com.streamliners.galleryapp.adapters;
 
 import android.content.Context;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.streamliners.galleryapp.GalleryActivity;
+import com.streamliners.galleryapp.R;
 import com.streamliners.galleryapp.databinding.ItemCardBinding;
 import com.streamliners.galleryapp.models.Item;
 
@@ -30,7 +35,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     /**
      * Listener for the call backs
      */
-    private OnListSizeChangeListener mListener;
+    private final OnListSizeChangeListener mListener;
+
+    /**
+     * For the index of the item selected in the list
+     */
+    public int index = -1;
 
     /**
      * To initialize the object with...
@@ -73,7 +83,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     /**
      * Represents view holder for the recycler view
      */
-    static class ItemViewHolder extends RecyclerView.ViewHolder {
+    class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener{
         ItemCardBinding cardBinding;
 
         /**
@@ -82,8 +92,18 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
          */
         public ItemViewHolder(ItemCardBinding itemCardBinding) {
             super(itemCardBinding.getRoot());
-
             cardBinding = itemCardBinding;
+            cardBinding.imageView.setOnCreateContextMenuListener(this);
+        }
+
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+            // Setting the index of the item in the list
+            index = this.getAbsoluteAdapterPosition();
+
+            // Inflate the menu
+            MenuInflater inflater = ((GalleryActivity) mContext).getMenuInflater();
+            inflater.inflate(R.menu.contextual_menu, menu);
         }
     }
 
