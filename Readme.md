@@ -1,7 +1,7 @@
 # Gallery App
 
 I have made an Gallery Application to add image and show using card view.<br>
-Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v7.0/app-debug.apk) for the application.
+Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v8.2/app-debug.apk) for the application.
 
 ## Features in the application
 
@@ -19,6 +19,8 @@ Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v7.
 - Floating Action Buttons menu
 - Get bitmap of any view
 - Universal Loader
+- Recycler View
+- Searching and sorting in the list
 
 ## Previews of the application
 
