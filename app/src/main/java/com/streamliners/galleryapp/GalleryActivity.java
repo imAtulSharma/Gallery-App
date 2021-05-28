@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -103,6 +105,41 @@ public class GalleryActivity extends AppCompatActivity {
         }
     }
 
+    // Options Menu methods
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu
+        getMenuInflater().inflate(R.menu.menu_options, menu);
+
+        // Get the search view
+        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                adapter.filter(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.filter(newText);
+                return false;
+            }
+        });
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.sort_alphabetically) {
+            adapter.sortAlphabetically();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     // Contextual menu methods
 
     @Override
@@ -115,7 +152,8 @@ public class GalleryActivity extends AppCompatActivity {
             deleteItemFromList(adapter.index);
             return true;
         } else if (item.getItemId() == R.id.share_item) {
-            shareItem(adapter.index);
+            Toast.makeText(this, "Share Image", Toast.LENGTH_SHORT).show();
+//            shareItem(adapter.index);
             return true;
         }
         return super.onContextItemSelected(item);
