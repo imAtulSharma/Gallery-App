@@ -16,6 +16,8 @@ import com.streamliners.galleryapp.R;
 import com.streamliners.galleryapp.databinding.ItemCardBinding;
 import com.streamliners.galleryapp.models.Item;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,6 +29,10 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
      */
     private final List<Item> mItemList;
 
+    /**
+     * List of the visible items
+     */
+    private final List<Item> visibleItemsList;
     /**
      * Context of the activity for inflating purpose
      */
@@ -52,6 +58,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         this.mContext = context;
         this.mItemList = items;
         this.mListener = listener;
+        this.visibleItemsList = new ArrayList<>(items);
     }
 
     @NonNull
@@ -66,7 +73,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     @Override
     public void onBindViewHolder(@NonNull ItemViewHolder holder, int position) {
         // Item for the specific position
-        Item item = mItemList.get(position);
+        Item item = visibleItemsList.get(position);
 
         // Binding the data to the views
         Glide.with(mContext).asBitmap().load(item.url).into(holder.cardBinding.imageView);
@@ -76,8 +83,44 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
 
     @Override
     public int getItemCount() {
-        mListener.onListSizeChanges(mItemList.size());
-        return mItemList.size();
+        mListener.onListSizeChanges(visibleItemsList.size());
+        return visibleItemsList.size();
+    }
+
+    /**
+     * To filter the visible list
+     * @param query query for the search
+     */
+    public void filter(String query) {
+        // Clear the list
+        visibleItemsList.clear();
+
+        // Check for query given
+        if (query.trim().isEmpty()) {
+            // Add all the items of the main list into visible list
+            visibleItemsList.addAll(mItemList);
+        } else {
+            // Filter according to the query
+            for (Item item :
+                    mItemList) {
+                if (item.label.toLowerCase().contains(query.toLowerCase())) {
+                    visibleItemsList.add(item);
+                }
+            }
+        }
+
+        // Refreshing the list
+        notifyDataSetChanged();
+    }
+
+    /**
+     * To sort alphabetically the visible list
+     */
+    public void sortAlphabetically() {
+        // Sort the list
+        Collections.sort(visibleItemsList, (o1, o2) -> o1.label.compareTo(o2.label));
+
+        notifyDataSetChanged();
     }
 
     /**
