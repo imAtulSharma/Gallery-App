@@ -10,7 +10,6 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -466,6 +465,9 @@ public class ImageDialog implements ItemHelper.OnCompleteListener {
 
         // Dismiss the dialog box
         alertDialog.dismiss();
+
+        // Dismiss the loader
+        app.hideLoadingDialog();
     }
 
     /**
