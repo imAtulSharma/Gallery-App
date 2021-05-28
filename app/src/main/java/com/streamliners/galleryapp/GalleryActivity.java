@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.streamliners.galleryapp.adapters.ItemAdapter;
 import com.streamliners.galleryapp.constants.Constants;
 import com.streamliners.galleryapp.databinding.ActivityGalleryBinding;
@@ -48,7 +49,7 @@ public class GalleryActivity extends AppCompatActivity {
     // Binding of the layout
     private ActivityGalleryBinding mainBinding;
     // List of the items
-    private final List<Item> listOfItems = new ArrayList<>();
+    private List<Item> listOfItems = new ArrayList<>();
     // Shared preferences
     private SharedPreferences preferences;
     // adapter for the list view
@@ -425,64 +426,18 @@ public class GalleryActivity extends AppCompatActivity {
      * To restore the data using shared preferences
      */
     private void getDataFromSharedPreferences() {
-        // Count of the items
-        int countOfItems = preferences.getInt(Constants.COUNT_OF_ITEMS, 0);
+        String json = preferences.getString(Constants.LIST_OF_ITEMS, "[]");
 
-        // To add all the items in the shared preferences
-        for (int i = 1; i <= countOfItems; i++) {
-            // Make a new item
-            Item item = getItemFromJson(preferences.getString(Constants.ITEM + i, ""));
-
-            // Add the item in the list and inflate the item in the view
-            listOfItems.add(item);
-//            inflateViewForItem(item, mainBinding.list.getChildCount());
-        }
-    }
-
-    // GSON parsing methods
-
-    /**
-     * To get the JSON for the item
-     * @param item item to be converted into JSON
-     * @return the json string
-     */
-    private String getJsonFromItem(Item item) {
-        Gson json = new Gson();
-
-        return json.toJson(item);
-    }
-
-    /**
-     * To get the item from JSON
-     * @param string JSON string of the item
-     * @return converted item
-     */
-    private Item getItemFromJson(String string) {
-        Gson json = new Gson();
-
-        return json.fromJson(string, Item.class);
+        // Make the list item from the shared preferences
+        listOfItems = (new Gson()).fromJson(json, new TypeToken<List<Item>>() {}.getType());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        // Putting all the objects in the shared preferences
-        int itemCount = 0;
-        for (Item item : listOfItems) {
-            // Check for the item
-            if (item != null) {
-                // incrementing the index
-                itemCount++;
-
-                // Saving the item in the shared preferences
-                preferences.edit()
-                        .putString(Constants.ITEM + itemCount, getJsonFromItem(item))
-                        .apply();
-            }
-        }
         preferences.edit()
-                .putInt(Constants.COUNT_OF_ITEMS, itemCount)
+                .putString(Constants.LIST_OF_ITEMS, (new Gson()).toJson(listOfItems))
                 .apply();
     }
 }
