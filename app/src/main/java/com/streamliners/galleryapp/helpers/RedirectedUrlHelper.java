@@ -1,7 +1,6 @@
-package com.streamliners.galleryapp;
+package com.streamliners.galleryapp.helpers;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -11,8 +10,8 @@ import java.net.URL;
 /**
  * Represents class for redirected URL(s)
  */
-public class RedirectedURL extends AsyncTask<String, Void, String> {
-    // Listener for the operation
+public class RedirectedUrlHelper extends AsyncTask<String, Void, String> {
+    // Listener for the process
     private OnCompleteListener mListener;
 
     /**
@@ -20,7 +19,7 @@ public class RedirectedURL extends AsyncTask<String, Void, String> {
      * @param listener listener for the callbacks
      * @return same object
      */
-    public RedirectedURL fetchRedirectedURL(OnCompleteListener listener) {
+    public RedirectedUrlHelper fetchRedirectedURL(OnCompleteListener listener) {
         mListener = listener;
         return this;
     }
@@ -45,7 +44,7 @@ public class RedirectedURL extends AsyncTask<String, Void, String> {
      * @return the redirected URL
      */
     private String getRedirectUrl(String url) {
-        URL urlTmp = null;
+        URL urlTmp;
         String redUrl;
         HttpURLConnection connection = null;
 
@@ -78,7 +77,7 @@ public class RedirectedURL extends AsyncTask<String, Void, String> {
     /**
      * For the callback
      */
-    interface OnCompleteListener {
+    public interface OnCompleteListener {
         /**
          * when the redirected URL is fetched successfully
          * @param redirectedUrl the redirected url

@@ -5,10 +5,12 @@
     <string name="image_load_failed">Image load failed : $1%s</string>
     <string name="refresh">Refresh</string>
     <string name="add_image_from_network">Add Image</string>
-    <string name="no_items">No items\nTry adding from the action above.</string>
+    <string name="no_items">No items found!\nTry to add from the actions.</string>
     <string name="edit_item_title">Edit</string>
     <string name="delete_item_title">Delete</string>
     <string name="add_image_from_gallery">Add image from gallery</string>
     <string name="share_item_title">Share</string>
     <string name="add_image_from_camera">Add image from camera</string>
+    <string name="title_search">Search</string>
+    <string name="title_sort_alphabetically">Sort Alphabetically</string>
 </resources>
