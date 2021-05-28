@@ -10,7 +10,6 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -145,7 +144,10 @@ public class ImageDialog implements ItemHelper.OnCompleteListener {
                                     @Override
                                     public void onSuccess(Set<Integer> colors, List<String> labels) {
                                         // To show the data in dialog box
-                                        showData(item, item.url, colors, labels);
+                                        showData(item.url, colors, labels);
+
+                                        // Set the preselected parameters for the item
+                                        preSelectParameters(item);
                                     }
 
                                     @Override
@@ -167,18 +169,13 @@ public class ImageDialog implements ItemHelper.OnCompleteListener {
      * @param colors major colors in the image
      * @param labels labels of the image
      */
-    private void showData(Item item, String url, Set<Integer> colors, List<String> labels) {
+    private void showData(String url, Set<Integer> colors, List<String> labels) {
         // Set the url of the image
         this.url = url;
 
         // Inflating all the other stuffs in the binding
         inflateColorChips(colors);
         inflateLabelChips(labels);
-
-        // Set the preselected parameters for the item
-        if (item != null) {
-            preSelectParameters(item);
-        }
 
         // Handling events
         handleCustomLabelInput();
@@ -314,16 +311,13 @@ public class ImageDialog implements ItemHelper.OnCompleteListener {
         dialogBinding.labelChips.addView(binding.getRoot());
 
         // Set the listener to the chip
-        binding.getRoot().setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // Remove the error
-                dialogBinding.customLabelInput.setError(null);
-                // Set the custom label text field
-                dialogBinding.customLabelInput.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-                // Change the variable
-                isCustomLabel = isChecked;
-            }
+        binding.getRoot().setOnCheckedChangeListener((buttonView, isChecked) -> {
+            // Remove the error
+            dialogBinding.customLabelInput.setError(null);
+            // Set the custom label text field
+            dialogBinding.customLabelInput.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            // Change the variable
+            isCustomLabel = isChecked;
         });
     }
 
@@ -355,6 +349,13 @@ public class ImageDialog implements ItemHelper.OnCompleteListener {
      * @param item item for which the parameters are needed
      */
     private void preSelectParameters(Item item) {
+        // Check that the item is for editing or fresh one
+        // If label is null then item is fresh
+        // else for editing
+        if (item.label == null) {
+            return;
+        }
+
         // For color chips
         for (int i = 0; i < dialogBinding.colorChips.getChildCount(); i++) {
             int color = ((Chip) dialogBinding.colorChips.getChildAt(i)).getChipBackgroundColor().getDefaultColor();
@@ -454,7 +455,7 @@ public class ImageDialog implements ItemHelper.OnCompleteListener {
     @Override
     public void onSuccess(String url, Set<Integer> colors, List<String> labels) {
         // To show the dialog box with the data
-        showData(null, url, colors, labels);
+        showData(url, colors, labels);
     }
 
     @Override
@@ -464,6 +465,9 @@ public class ImageDialog implements ItemHelper.OnCompleteListener {
 
         // Dismiss the dialog box
         alertDialog.dismiss();
+
+        // Dismiss the loader
+        app.hideLoadingDialog();
     }
 
     /**

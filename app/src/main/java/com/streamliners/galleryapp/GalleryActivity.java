@@ -11,8 +11,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.view.ContextMenu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -20,19 +18,20 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.bumptech.glide.Glide;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.streamliners.galleryapp.adapters.ItemAdapter;
+import com.streamliners.galleryapp.constants.Constants;
 import com.streamliners.galleryapp.databinding.ActivityGalleryBinding;
 import com.streamliners.galleryapp.databinding.ItemCardBinding;
-import com.streamliners.galleryapp.helpers.ItemHelper;
 import com.streamliners.galleryapp.models.Item;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class GalleryActivity extends AppCompatActivity {
     // Request code for fetch image from gallery
@@ -53,13 +52,8 @@ public class GalleryActivity extends AppCompatActivity {
     private List<Item> listOfItems = new ArrayList<>();
     // Shared preferences
     private SharedPreferences preferences;
-
-    // Dialog box is showed or not
-    public boolean isDialogBoxShowed;
-    // Selected item position in the list
-    private int selectedItemPosition;
-    // For contextual options
-    private Item selectedItem;
+    // adapter for the list view
+    private ItemAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,21 +66,11 @@ public class GalleryActivity extends AppCompatActivity {
         // Setup FABs
         setupFab();
 
-        // To set the dialog box status
-        if(savedInstanceState != null) {
-            if (savedInstanceState.getBoolean(Constants.DIALOG_BOX_STATUS, false)) {
-                addImageFromNetwork();
-            }
-        }
-
         preferences = getPreferences(MODE_PRIVATE);
         getDataFromSharedPreferences();
 
-        // Check whether the list is empty or not
-        if (listOfItems.isEmpty()) {
-            // Show the no items text view
-            mainBinding.noItemTextView.setVisibility(View.VISIBLE);
-        }
+        // Setup the recycler view for the items list
+        setupRecyclerView();
     }
 
     @Override
@@ -96,25 +80,25 @@ public class GalleryActivity extends AppCompatActivity {
         // Checking the result status
         if (requestCode == RC_PHOTO_PICKER && resultCode == RESULT_OK) {
             // Get URI from the intent
+            assert data != null;
             Uri selectedImageUri = data.getData();
 
             // To show the dialog
-            showImageDialog(mainBinding.list.getChildCount(), selectedImageUri.toString());
+            showImageDialog(new Item(selectedImageUri.toString(), 0, null));
         } else if (requestCode == RC_PHOTO_CAPTURE && resultCode == RESULT_OK) {
             // To show the dialog
-            showImageDialog(mainBinding.list.getChildCount(), imageUri.toString());
+            showImageDialog(new Item(imageUri.toString(), 0, null));
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_CODE: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    openCamera();
-                } else {
-                    Toast.makeText(this, "permission Denied...", Toast.LENGTH_SHORT).show();
-                }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCamera();
+            } else {
+                Toast.makeText(this, "permission Denied...", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -125,19 +109,19 @@ public class GalleryActivity extends AppCompatActivity {
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         // Check for the menu item selected
         if (item.getItemId() == R.id.edit_item) {
-            editItemInList(selectedItemPosition);
+            editItemInList(adapter.index);
             return true;
         } else if (item.getItemId() == R.id.delete_item) {
-            deleteItemFromList(selectedItemPosition);
+            deleteItemFromList(adapter.index);
             return true;
         } else if (item.getItemId() == R.id.share_item) {
-            shareItem(selectedItemPosition);
+            shareItem(adapter.index);
             return true;
         }
         return super.onContextItemSelected(item);
     }
 
-    // Actions methods
+    // Contextual actions methods
 
     /**
      * To edit the item from the list
@@ -145,7 +129,7 @@ public class GalleryActivity extends AppCompatActivity {
      */
     private void editItemInList(int position) {
         // Show dialog for image editing
-        showImageDialog(position, listOfItems.get(position).url);
+        showImageDialog(listOfItems.get(position));
     }
 
     /**
@@ -153,26 +137,12 @@ public class GalleryActivity extends AppCompatActivity {
      * @param position position defined of the item
      */
     private void deleteItemFromList(int position) {
-        // Set the visibility of the card to GONE
-        mainBinding.list.getChildAt(position).setVisibility(View.GONE);
-        listOfItems.set(position, null);
-
-        // Checking items in the list
-        boolean isEmpty = true;
-        for (Item item : listOfItems) {
-            if (item != null) {
-                isEmpty = false;
-                break;
-            }
-        }
-
-        // If the list is empty then set the no item text view to visible
-        if (isEmpty) {
-            mainBinding.noItemTextView.setVisibility(View.VISIBLE);
-        }
+        // Remove the item from the list and notify the adapter
+        listOfItems.remove(position);
+        adapter.notifyItemRemoved(position);
 
         // Showing the deleted toast
-        Toast.makeText(this, "Item deleted from list", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Item Deleted!", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -246,26 +216,16 @@ public class GalleryActivity extends AppCompatActivity {
      * To show the dialog to add image
      */
     private void addImageFromNetwork() {
-        // Check for the orientation
-        if (this.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-            // Change the dialog box appearance to true
-            isDialogBoxShowed = true;
-            // To set the screen orientation in portrait mode only
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        }
+        // To set the screen orientation locked
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 
         new ImageDialog()
                 .showDialog(this, new ImageDialog.OnCompleteListener() {
                     @Override
                     public void OnImageAddedSuccess(Item item) {
-                        // Set the dialog box appearance to false
-                        isDialogBoxShowed = false;
-                        // Adding the item in the list
+                        // Add in the list and notify the adapter
                         listOfItems.add(item);
-                        // Make the no item text view invisible
-                        mainBinding.noItemTextView.setVisibility(View.GONE);
-                        // Inflate the layout for the
-                        inflateViewForItem(item, mainBinding.list.getChildCount());
+                        adapter.notifyDataSetChanged();
 
                         // To set the screen orientation according to the user
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
@@ -273,7 +233,6 @@ public class GalleryActivity extends AppCompatActivity {
 
                     @Override
                     public void OnError(String error) {
-                        isDialogBoxShowed = false;
                         new MaterialAlertDialogBuilder(GalleryActivity.this)
                                 .setTitle("Error")
                                 .setMessage(error)
@@ -289,28 +248,31 @@ public class GalleryActivity extends AppCompatActivity {
      * To show dialog for the image already in storage
      * For: Camera, Device Storage, Edit purpose
      */
-    private void showImageDialog(int position, String url) {
-        // Get the item of the position
-        try {
-            selectedItem = listOfItems.get(position);
-        } catch(Exception exception) {
-            selectedItem = new Item(url, 0, "");
-        }
+    private void showImageDialog(Item selectedItem) {
+        // To set the screen orientation locked
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 
         new ImageDialog()
                 .showDialog(this, selectedItem, new ImageDialog.OnCompleteListener() {
                     @Override
                     public void OnImageAddedSuccess(Item item) {
-                        // Try to update the list if not then just add the item
-                        try {
-                            // Update the list and remove the card item from the layout
-                            listOfItems.set(position, item);
-                            mainBinding.list.removeViewAt(position);
-                        } catch(Exception e) {
-                            listOfItems.add(position, item);
+                        if (selectedItem.label == null) {
+                            // Add in the list and notify the adapter
+                            listOfItems.add(item);
+                            adapter.notifyDataSetChanged();
+
+                            // Showing the adding toast
+                            Toast.makeText(GalleryActivity.this, "Item Added!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            listOfItems.set(adapter.index, item);
+                            adapter.notifyItemChanged(adapter.index);
+
+                            // Showing the editing toast
+                            Toast.makeText(GalleryActivity.this, "Item Edited!", Toast.LENGTH_SHORT).show();
                         }
-                        // Inflate the view to the specified position
-                        inflateViewForItem(item, position);
+
+                        // To set the screen orientation according to the user
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
                     }
 
                     @Override
@@ -319,6 +281,9 @@ public class GalleryActivity extends AppCompatActivity {
                                 .setTitle("Error")
                                 .setMessage(error)
                                 .show();
+
+                        // To set the screen orientation according to the user
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
                     }
                 });
     }
@@ -364,9 +329,7 @@ public class GalleryActivity extends AppCompatActivity {
         // Showing rectangle and set listener
         mainBinding.rectangle.setVisibility(View.VISIBLE);
         mainBinding.rectangle.animate().alpha(0.3f);
-        mainBinding.rectangle.setOnClickListener(v -> {
-            collapseFab();
-        });
+        mainBinding.rectangle.setOnClickListener(v -> collapseFab());
 
         // Show all FAB
         mainBinding.fabNetwork.show();
@@ -413,6 +376,26 @@ public class GalleryActivity extends AppCompatActivity {
     // Utility methods
 
     /**
+     * To setup recycler for the list of items
+     */
+    private void setupRecyclerView() {
+        // Initializing adapter for the list view
+        adapter = new ItemAdapter(this, listOfItems, size -> {
+            if (size == 0) {
+                mainBinding.noItemTextView.setVisibility(View.VISIBLE);
+                return;
+            }
+            mainBinding.noItemTextView.setVisibility(View.INVISIBLE);
+        });
+
+        // Setup the layout manager for the recycler view
+        mainBinding.list.setLayoutManager(new LinearLayoutManager(this));
+
+        // Set the adapter to the list view
+        mainBinding.list.setAdapter(adapter);
+    }
+
+    /**
      * To get the screen shot of the complete view
      * @param view view for which the screen shot has to taken
      * @return bitmap image of the complete view
@@ -440,123 +423,21 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     /**
-     * To inflate the view for the item to the specified position
-     * @param item item to be placed in the view
-     * @param position position of the item in the list
-     */
-    private void inflateViewForItem(Item item, int position) {
-        // Inflate layout of the card
-        ItemCardBinding binding = ItemCardBinding.inflate(getLayoutInflater());
-
-        // Binding the data
-        Glide.with(this)
-                .load(item.url)
-                .into(binding.imageView);
-        binding.labelView.setText(item.label);
-        binding.labelView.setBackgroundColor(item.color);
-
-        // Register the view for the context menu add to the list
-        registerViewForContextMenu(binding, position);
-
-        // Add the card in the list
-        mainBinding.list.addView(binding.getRoot(), position);
-
-        // If the list is empty then set the no item text view to visible
-        if (listOfItems.isEmpty()) {
-            mainBinding.noItemTextView.setVisibility(View.VISIBLE);
-        } else {
-            mainBinding.noItemTextView.setVisibility(View.GONE);
-        }
-    }
-
-    /**
-     * To register the view for contextual menu
-     * @param binding binding to be registered
-     * @param position position of the binding
-     */
-    private void registerViewForContextMenu(ItemCardBinding binding, int position) {
-        // Set the on long pressed listener to the image view
-        binding.imageView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
-            @Override
-            public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-                // Inflate the menu for the view
-                MenuInflater inflater = getMenuInflater();
-                inflater.inflate(R.menu.contextual_menu, menu);
-
-                // Set the selected position
-                selectedItemPosition = position;
-            }
-        });
-    }
-
-    /**
      * To restore the data using shared preferences
      */
     private void getDataFromSharedPreferences() {
-        // Count of the items
-        int countOfItems = preferences.getInt(Constants.COUNT_OF_ITEMS, 0);
+        String json = preferences.getString(Constants.LIST_OF_ITEMS, "[]");
 
-        // To add all the items in the shared preferences
-        for (int i = 1; i <= countOfItems; i++) {
-            // Make a new item
-            Item item = getItemFromJson(preferences.getString(Constants.ITEM + i, ""));
-
-            // Add the item in the list and inflate the item in the view
-            listOfItems.add(item);
-            inflateViewForItem(item, mainBinding.list.getChildCount());
-        }
-    }
-
-    // GSON parsing methods
-
-    /**
-     * To get the JSON for the item
-     * @param item item to be converted into JSON
-     * @return the json string
-     */
-    private String getJsonFromItem(Item item) {
-        Gson json = new Gson();
-
-        return json.toJson(item);
-    }
-
-    /**
-     * To get the item from JSON
-     * @param string JSON string of the item
-     * @return converted item
-     */
-    private Item getItemFromJson(String string) {
-        Gson json = new Gson();
-
-        return json.fromJson(string, Item.class);
-    }
-
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putBoolean(Constants.DIALOG_BOX_STATUS, isDialogBoxShowed);
-        super.onSaveInstanceState(outState);
+        // Make the list item from the shared preferences
+        listOfItems = (new Gson()).fromJson(json, new TypeToken<List<Item>>() {}.getType());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        // Putting all the objects in the shared preferences
-        int itemCount = 0;
-        for (Item item : listOfItems) {
-            // Check for the item
-            if (item != null) {
-                // incrementing the index
-                itemCount++;
-
-                // Saving the item in the shared preferences
-                preferences.edit()
-                        .putString(Constants.ITEM + itemCount, getJsonFromItem(item))
-                        .apply();
-            }
-        }
         preferences.edit()
-                .putInt(Constants.COUNT_OF_ITEMS, itemCount)
+                .putString(Constants.LIST_OF_ITEMS, (new Gson()).toJson(listOfItems))
                 .apply();
     }
 }
