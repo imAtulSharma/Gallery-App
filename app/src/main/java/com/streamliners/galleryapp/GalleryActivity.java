@@ -7,6 +7,9 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,14 +20,20 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
 import com.streamliners.galleryapp.adapters.ItemAdapter;
@@ -122,18 +131,17 @@ public class GalleryActivity extends AppCompatActivity {
 //            editItemInList(selectedItemPosition);
             return true;
         } else if (item.getItemId() == R.id.delete_item) {
-            Toast.makeText(this, "delete " + listOfItems.get(adapter.index).label, Toast.LENGTH_SHORT).show();
-//            deleteItemFromList(selectedItemPosition);
+            deleteItemFromList(adapter.index);
             return true;
         } else if (item.getItemId() == R.id.share_item) {
             Toast.makeText(this, "share " + listOfItems.get(adapter.index).label, Toast.LENGTH_SHORT).show();
-            shareItem(adapter.index);
+//            shareItem(adapter.index);
             return true;
         }
         return super.onContextItemSelected(item);
     }
 
-    // Actions methods
+    // Contextual actions methods
 
     /**
      * To edit the item from the list
@@ -149,26 +157,12 @@ public class GalleryActivity extends AppCompatActivity {
      * @param position position defined of the item
      */
     private void deleteItemFromList(int position) {
-        // Set the visibility of the card to GONE
-        mainBinding.list.getChildAt(position).setVisibility(View.GONE);
-        listOfItems.set(position, null);
-
-        // Checking items in the list
-        boolean isEmpty = true;
-        for (Item item : listOfItems) {
-            if (item != null) {
-                isEmpty = false;
-                break;
-            }
-        }
-
-        // If the list is empty then set the no item text view to visible
-        if (isEmpty) {
-            mainBinding.noItemTextView.setVisibility(View.VISIBLE);
-        }
+        // Remove the item from the list and notify the adapter
+        listOfItems.remove(position);
+        adapter.notifyItemRemoved(position);
 
         // Showing the deleted toast
-        Toast.makeText(this, "Item deleted from list", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Item Deleted!", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -177,7 +171,6 @@ public class GalleryActivity extends AppCompatActivity {
      */
     private void shareItem(int position) {
         // Inflate layout for the item to be shared
-        ItemCardBinding binding = ItemCardBinding.inflate(getLayoutInflater());
         ItemCardBinding binding = ItemCardBinding.bind(mainBinding.list.getChildAt(position));
 
         // Get the screen shot of the card view
