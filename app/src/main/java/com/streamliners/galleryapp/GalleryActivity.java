@@ -100,10 +100,10 @@ public class GalleryActivity extends AppCompatActivity {
             Uri selectedImageUri = data.getData();
 
             // To show the dialog
-            showImageDialog(mainBinding.list.getChildCount(), selectedImageUri.toString());
+            showImageDialog(new Item(selectedImageUri.toString(), 0, null));
         } else if (requestCode == RC_PHOTO_CAPTURE && resultCode == RESULT_OK) {
             // To show the dialog
-            showImageDialog(mainBinding.list.getChildCount(), imageUri.toString());
+            showImageDialog(new Item(imageUri.toString(), 0, null));
         }
     }
 
@@ -127,8 +127,7 @@ public class GalleryActivity extends AppCompatActivity {
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         // Check for the menu item selected
         if (item.getItemId() == R.id.edit_item) {
-            Toast.makeText(this, "edit " + listOfItems.get(adapter.index).label, Toast.LENGTH_SHORT).show();
-//            editItemInList(selectedItemPosition);
+            editItemInList(adapter.index);
             return true;
         } else if (item.getItemId() == R.id.delete_item) {
             deleteItemFromList(adapter.index);
@@ -149,7 +148,7 @@ public class GalleryActivity extends AppCompatActivity {
      */
     private void editItemInList(int position) {
         // Show dialog for image editing
-        showImageDialog(position, listOfItems.get(position).url);
+        showImageDialog(listOfItems.get(position));
     }
 
     /**
@@ -268,18 +267,28 @@ public class GalleryActivity extends AppCompatActivity {
      * To show dialog for the image already in storage
      * For: Camera, Device Storage, Edit purpose
      */
-    private void showImageDialog(int position, String url) {
+    private void showImageDialog(Item selectedItem) {
         // To set the screen orientation locked
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
-
-        // Get the item of the position
-        // For contextual options
-        Item selectedItem = new Item(url, 0, "");
 
         new ImageDialog()
                 .showDialog(this, selectedItem, new ImageDialog.OnCompleteListener() {
                     @Override
                     public void OnImageAddedSuccess(Item item) {
+                        if (selectedItem.label == null) {
+                            // Add in the list and notify the adapter
+                            listOfItems.add(item);
+                            adapter.notifyDataSetChanged();
+
+                            // Showing the adding toast
+                            Toast.makeText(GalleryActivity.this, "Item Added!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            listOfItems.set(adapter.index, item);
+                            adapter.notifyItemChanged(adapter.index);
+
+                            // Showing the editing toast
+                            Toast.makeText(GalleryActivity.this, "Item Edited!", Toast.LENGTH_SHORT).show();
+                        }
 //                        // Try to update the list if not then just add the item
 //                        try {
 //                            // Update the list and remove the card item from the layout
@@ -291,9 +300,7 @@ public class GalleryActivity extends AppCompatActivity {
 //                        // Inflate the view to the specified position
 //                        inflateViewForItem(item, position);
 
-                        // Add in the list and notify the adapter
-                        listOfItems.add(item);
-                        adapter.notifyDataSetChanged();
+
 
                         // To set the screen orientation according to the user
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);

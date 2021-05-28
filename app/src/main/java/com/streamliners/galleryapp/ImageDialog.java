@@ -353,6 +353,13 @@ public class ImageDialog implements ItemHelper.OnCompleteListener {
      * @param item item for which the parameters are needed
      */
     private void preSelectParameters(Item item) {
+        // Check that the item is for editing or fresh one
+        // If label is null then item is fresh
+        // else for editing
+        if (item.label == null) {
+            return;
+        }
+
         // For color chips
         for (int i = 0; i < dialogBinding.colorChips.getChildCount(); i++) {
             int color = ((Chip) dialogBinding.colorChips.getChildAt(i)).getChipBackgroundColor().getDefaultColor();
