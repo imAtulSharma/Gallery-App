@@ -312,16 +312,13 @@ public class ImageDialog implements ItemHelper.OnCompleteListener {
         dialogBinding.labelChips.addView(binding.getRoot());
 
         // Set the listener to the chip
-        binding.getRoot().setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // Remove the error
-                dialogBinding.customLabelInput.setError(null);
-                // Set the custom label text field
-                dialogBinding.customLabelInput.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-                // Change the variable
-                isCustomLabel = isChecked;
-            }
+        binding.getRoot().setOnCheckedChangeListener((buttonView, isChecked) -> {
+            // Remove the error
+            dialogBinding.customLabelInput.setError(null);
+            // Set the custom label text field
+            dialogBinding.customLabelInput.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            // Change the variable
+            isCustomLabel = isChecked;
         });
     }
 

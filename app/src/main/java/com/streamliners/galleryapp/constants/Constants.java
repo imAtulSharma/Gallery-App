@@ -1,4 +1,4 @@
-package com.streamliners.galleryapp;
+package com.streamliners.galleryapp.constants;
 
 /**
  * Represents some keys to share data when configuration changes
@@ -9,7 +9,4 @@ public class Constants {
 
     // To share the items
     public static final String ITEM = "Item";
-
-    // To know if dialog box has to be showed
-    public static final String DIALOG_BOX_STATUS = "dialog box status";
 }

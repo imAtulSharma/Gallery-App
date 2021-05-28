@@ -63,21 +63,6 @@ public class ItemHelper {
     }
 
     /**
-     * To fetch image with the specified url
-     * @param context context of the activity
-     * @param url url of the image
-     * @param listener listener for the callbacks
-     */
-    public void fetchData(Context context, String url, OnCompleteListener listener) {
-        this.mListener = listener;
-        this.mContext = context;
-        this.mUrl = url;
-
-        // to fetch image with the given url
-        fetchImageForEditing(url);
-    }
-
-    /**
      * To fetch random image from the provided url
      * @param url url from which the image is to be fetched
      */
@@ -131,51 +116,6 @@ public class ItemHelper {
                 mListener.onError(error);
             }
         }).execute(url);
-    }
-
-    /**
-     * To fetch image from the provided url for editing purpose
-     * No need for redirection link
-     * @param url url from which the image is to be fetched
-     */
-    private void fetchImageForEditing(String url) {
-        // setting the url
-        mUrl = url;
-
-        // fetching image using glide
-        Glide.with(mContext)
-                .asBitmap()
-                .load(mUrl)
-                .into(new CustomTarget<Bitmap>() {
-                    @Override
-                    public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
-                        new MachineLearningModelHelper()
-                                .getData(bitmap, new MachineLearningModelHelper.OnCompleteListener() {
-                                    @Override
-                                    public void onSuccess(Set<Integer> colors, List<String> labels) {
-                                        mListener.onSuccess(mUrl, colors, labels);
-                                    }
-
-                                    @Override
-                                    public void onError(String error) {
-                                        mListener.onError(error);
-                                    }
-                                });
-                    }
-
-                    @Override
-                    public void onLoadCleared(@Nullable Drawable placeholder) {
-
-                    }
-
-                    @Override
-                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
-                        super.onLoadFailed(errorDrawable);
-
-                        // callback for the error
-                        mListener.onError("Image load failed");
-                    }
-                });
     }
 
     /**

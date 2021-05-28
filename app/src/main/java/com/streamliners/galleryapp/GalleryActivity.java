@@ -7,45 +7,30 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
-import android.view.ContextMenu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
 import com.streamliners.galleryapp.adapters.ItemAdapter;
+import com.streamliners.galleryapp.constants.Constants;
 import com.streamliners.galleryapp.databinding.ActivityGalleryBinding;
 import com.streamliners.galleryapp.databinding.ItemCardBinding;
-import com.streamliners.galleryapp.helpers.ItemHelper;
 import com.streamliners.galleryapp.models.Item;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class GalleryActivity extends AppCompatActivity {
     // Request code for fetch image from gallery
@@ -63,14 +48,11 @@ public class GalleryActivity extends AppCompatActivity {
     // Binding of the layout
     private ActivityGalleryBinding mainBinding;
     // List of the items
-    private List<Item> listOfItems = new ArrayList<>();
+    private final List<Item> listOfItems = new ArrayList<>();
     // Shared preferences
     private SharedPreferences preferences;
     // adapter for the list view
     private ItemAdapter adapter;
-
-    // Selected item position in the list
-    private int selectedItemPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +79,7 @@ public class GalleryActivity extends AppCompatActivity {
         // Checking the result status
         if (requestCode == RC_PHOTO_PICKER && resultCode == RESULT_OK) {
             // Get URI from the intent
+            assert data != null;
             Uri selectedImageUri = data.getData();
 
             // To show the dialog
@@ -110,13 +93,11 @@ public class GalleryActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case PERMISSION_CODE: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    openCamera();
-                } else {
-                    Toast.makeText(this, "permission Denied...", Toast.LENGTH_SHORT).show();
-                }
+        if (requestCode == PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCamera();
+            } else {
+                Toast.makeText(this, "permission Denied...", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -133,8 +114,7 @@ public class GalleryActivity extends AppCompatActivity {
             deleteItemFromList(adapter.index);
             return true;
         } else if (item.getItemId() == R.id.share_item) {
-            Toast.makeText(this, "share " + listOfItems.get(adapter.index).label, Toast.LENGTH_SHORT).show();
-//            shareItem(adapter.index);
+            shareItem(adapter.index);
             return true;
         }
         return super.onContextItemSelected(item);
@@ -289,18 +269,6 @@ public class GalleryActivity extends AppCompatActivity {
                             // Showing the editing toast
                             Toast.makeText(GalleryActivity.this, "Item Edited!", Toast.LENGTH_SHORT).show();
                         }
-//                        // Try to update the list if not then just add the item
-//                        try {
-//                            // Update the list and remove the card item from the layout
-//                            listOfItems.set(position, item);
-//                            mainBinding.list.removeViewAt(position);
-//                        } catch(Exception e) {
-//                            listOfItems.add(position, item);
-//                        }
-//                        // Inflate the view to the specified position
-//                        inflateViewForItem(item, position);
-
-
 
                         // To set the screen orientation according to the user
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
@@ -360,9 +328,7 @@ public class GalleryActivity extends AppCompatActivity {
         // Showing rectangle and set listener
         mainBinding.rectangle.setVisibility(View.VISIBLE);
         mainBinding.rectangle.animate().alpha(0.3f);
-        mainBinding.rectangle.setOnClickListener(v -> {
-            collapseFab();
-        });
+        mainBinding.rectangle.setOnClickListener(v -> collapseFab());
 
         // Show all FAB
         mainBinding.fabNetwork.show();
@@ -413,15 +379,12 @@ public class GalleryActivity extends AppCompatActivity {
      */
     private void setupRecyclerView() {
         // Initializing adapter for the list view
-        adapter = new ItemAdapter(this, listOfItems, new ItemAdapter.OnListSizeChangeListener() {
-            @Override
-            public void onListSizeChanges(int size) {
-                if (size == 0) {
-                    mainBinding.noItemTextView.setVisibility(View.VISIBLE);
-                    return;
-                }
-                mainBinding.noItemTextView.setVisibility(View.GONE);
+        adapter = new ItemAdapter(this, listOfItems, size -> {
+            if (size == 0) {
+                mainBinding.noItemTextView.setVisibility(View.VISIBLE);
+                return;
             }
+            mainBinding.noItemTextView.setVisibility(View.GONE);
         });
 
         // Setup the layout manager for the recycler view
@@ -456,56 +419,6 @@ public class GalleryActivity extends AppCompatActivity {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
         startActivityForResult(intent, RC_PHOTO_CAPTURE);
-    }
-
-    /**
-     * To inflate the view for the item to the specified position
-     * @param item item to be placed in the view
-     * @param position position of the item in the list
-     */
-    private void inflateViewForItem(Item item, int position) {
-        // Inflate layout of the card
-        ItemCardBinding binding = ItemCardBinding.inflate(getLayoutInflater());
-
-        // Binding the data
-        Glide.with(this)
-                .load(item.url)
-                .into(binding.imageView);
-        binding.labelView.setText(item.label);
-        binding.labelView.setBackgroundColor(item.color);
-
-        // Register the view for the context menu add to the list
-        registerViewForContextMenu(binding, position);
-
-        // Add the card in the list
-        mainBinding.list.addView(binding.getRoot(), position);
-
-        // If the list is empty then set the no item text view to visible
-        if (listOfItems.isEmpty()) {
-            mainBinding.noItemTextView.setVisibility(View.VISIBLE);
-        } else {
-            mainBinding.noItemTextView.setVisibility(View.GONE);
-        }
-    }
-
-    /**
-     * To register the view for contextual menu
-     * @param binding binding to be registered
-     * @param position position of the binding
-     */
-    private void registerViewForContextMenu(ItemCardBinding binding, int position) {
-        // Set the on long pressed listener to the image view
-        binding.imageView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
-            @Override
-            public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-                // Inflate the menu for the view
-                MenuInflater inflater = getMenuInflater();
-                inflater.inflate(R.menu.contextual_menu, menu);
-
-                // Set the selected position
-                selectedItemPosition = position;
-            }
-        });
     }
 
     /**
