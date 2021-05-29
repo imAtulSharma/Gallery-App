@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -32,7 +33,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     /**
      * List of the visible items
      */
-    private final List<Item> visibleItemsList;
+    public final List<Item> visibleItemsList;
     /**
      * Context of the activity for inflating purpose
      */
@@ -47,6 +48,11 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
      * For the index of the item selected in the list
      */
     public int index = -1;
+
+    /**
+     * For the binding of the item selected from the list
+     */
+    public ItemCardBinding itemBinding;
 
     /**
      * To initialize the object with...
@@ -123,6 +129,62 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         notifyDataSetChanged();
     }
 
+    // Notify methods
+
+    /**
+     * To notify the adapter for the item added
+     * @param item item to be added
+     */
+    public void add(Item item){
+        mItemList.add(item);
+        visibleItemsList.add(item);
+        notifyItemInserted(visibleItemsList.size()-1);
+
+        // Showing the toast
+        Toast.makeText(mContext, "Item Added!", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * To notify the adapter for the item deletion
+     * @param position index of the item to be deleted
+     */
+    public void delete(int position){
+        mItemList.remove(visibleItemsList.get(position));
+        visibleItemsList.remove(position);
+        notifyItemRemoved(position);
+
+        // Showing the toast
+        Toast.makeText(mContext, "Item Deleted!", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * To notify the adapter for the item edition
+     * @param position index of the item to be edit
+     * @param item edited(changed) item
+     */
+    public void edit(int position, Item item){
+        mItemList.set(mItemList.indexOf(visibleItemsList.get(position)), item);
+        visibleItemsList.set(position, item);
+        notifyItemChanged(position);
+
+        // Showing the toast
+        Toast.makeText(mContext, "Item Edited!", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * To notify the adapter that the item moved
+     * @param from initial index
+     * @param to index where the item to be moved
+     */
+    public void move(int from, int to){
+        Collections.swap(mItemList, mItemList.indexOf(visibleItemsList.get(from)), mItemList.indexOf(visibleItemsList.get(to)));
+        Collections.swap(visibleItemsList, from, to);
+        notifyItemMoved(from, to);
+
+        // Showing the toast
+        Toast.makeText(mContext, "Item Moved!", Toast.LENGTH_SHORT).show();
+    }
+
     /**
      * Represents view holder for the recycler view
      */
@@ -141,8 +203,9 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
 
         @Override
         public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-            // Setting the index of the item in the list
+            // Setting the index and binding of the item in the list
             index = this.getAbsoluteAdapterPosition();
+            itemBinding = cardBinding;
 
             // Inflate the menu
             MenuInflater inflater = ((GalleryActivity) mContext).getMenuInflater();
