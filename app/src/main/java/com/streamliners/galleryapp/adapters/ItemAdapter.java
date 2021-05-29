@@ -153,6 +153,17 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         notifyItemChanged(position);
     }
 
+
+    /**
+     * To notify the adapter that the item moved
+     * @param from initial index
+     * @param to index where the item to be moved
+     */
+    public void move(int from, int to){
+        Collections.swap(visibleItemsList, from, to);
+        notifyItemMoved(from, to);
+    }
+
     /**
      * Represents view holder for the recycler view
      */

@@ -35,6 +35,7 @@ import com.streamliners.galleryapp.models.Item;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class GalleryActivity extends AppCompatActivity {
@@ -434,11 +435,18 @@ public class GalleryActivity extends AppCompatActivity {
         // Set the adapter to the list view
         mainBinding.list.setAdapter(adapter);
 
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT | ItemTouchHelper.DOWN | ItemTouchHelper.UP) {
-
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,
+                ItemTouchHelper.LEFT) {
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
+                int fromPosition = viewHolder.getAbsoluteAdapterPosition();
+                int toPosition = target.getAbsoluteAdapterPosition();
+
+                Collections.swap(listOfItems, listOfItems.indexOf(adapter.visibleItemsList.get(fromPosition)), listOfItems.indexOf(adapter.visibleItemsList.get(toPosition)));
+                adapter.move(fromPosition, toPosition);
+
+                Toast.makeText(GalleryActivity.this, "done", Toast.LENGTH_SHORT).show();
+                return true;
             }
 
             @Override
