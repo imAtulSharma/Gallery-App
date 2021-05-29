@@ -50,6 +50,11 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     public int index = -1;
 
     /**
+     * For the binding of the item selected from the list
+     */
+    public ItemCardBinding itemBinding;
+
+    /**
      * To initialize the object with...
      * @param context context of the activity
      * @param items list of the items
@@ -198,8 +203,9 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
 
         @Override
         public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-            // Setting the index of the item in the list
+            // Setting the index and binding of the item in the list
             index = this.getAbsoluteAdapterPosition();
+            itemBinding = cardBinding;
 
             // Inflate the menu
             MenuInflater inflater = ((GalleryActivity) mContext).getMenuInflater();

@@ -152,8 +152,7 @@ public class GalleryActivity extends AppCompatActivity {
             showImageDialog(adapter.visibleItemsList.get(adapter.index));
             return true;
         } else if (item.getItemId() == R.id.share_item) {
-            Toast.makeText(this, "Share Image", Toast.LENGTH_SHORT).show();
-//            shareItem(adapter.index);
+            shareItem(adapter.itemBinding.cardView);
             return true;
         }
         return super.onContextItemSelected(item);
@@ -161,14 +160,11 @@ public class GalleryActivity extends AppCompatActivity {
 
     /**
      * To share the bitmap of the particular item card
-     * @param position position defined of the item
+     * @param view view to be shared
      */
-    private void shareItem(int position) {
-        // Inflate layout for the item to be shared
-        ItemCardBinding binding = ItemCardBinding.bind(mainBinding.list.getChildAt(position));
-
+    private void shareItem(View view) {
         // Get the screen shot of the card view
-        Bitmap icon = getShot(binding.cardView);
+        Bitmap icon = getShot(view);
 
         // Calling the intent to share the bitmap
         Intent share = new Intent(Intent.ACTION_SEND);
