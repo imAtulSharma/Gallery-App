@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -130,8 +131,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
      * @param item item to be added
      */
     public void add(Item item){
+        mItemList.add(item);
         visibleItemsList.add(item);
         notifyItemInserted(visibleItemsList.size()-1);
+
+        // Showing the toast
+        Toast.makeText(mContext, "Item Added!", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -139,8 +144,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
      * @param position index of the item to be deleted
      */
     public void delete(int position){
+        mItemList.remove(visibleItemsList.get(position));
         visibleItemsList.remove(position);
         notifyItemRemoved(position);
+
+        // Showing the toast
+        Toast.makeText(mContext, "Item Deleted!", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -149,10 +158,13 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
      * @param item edited(changed) item
      */
     public void edit(int position, Item item){
+        mItemList.set(mItemList.indexOf(visibleItemsList.get(position)), item);
         visibleItemsList.set(position, item);
         notifyItemChanged(position);
-    }
 
+        // Showing the toast
+        Toast.makeText(mContext, "Item Edited!", Toast.LENGTH_SHORT).show();
+    }
 
     /**
      * To notify the adapter that the item moved
@@ -160,8 +172,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
      * @param to index where the item to be moved
      */
     public void move(int from, int to){
+        Collections.swap(mItemList, mItemList.indexOf(visibleItemsList.get(from)), mItemList.indexOf(visibleItemsList.get(to)));
         Collections.swap(visibleItemsList, from, to);
         notifyItemMoved(from, to);
+
+        // Showing the toast
+        Toast.makeText(mContext, "Item Moved!", Toast.LENGTH_SHORT).show();
     }
 
     /**

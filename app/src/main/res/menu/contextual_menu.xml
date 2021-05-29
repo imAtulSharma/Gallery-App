@@ -8,8 +8,4 @@
     <!--    For the delete function-->
     <item android:id="@+id/share_item"
         android:title="@string/share_item_title"/>
-
-    <!--    For the delete function-->
-    <item android:id="@+id/delete_item"
-        android:title="@string/delete_item_title"/>
 </menu>

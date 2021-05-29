@@ -35,7 +35,6 @@ import com.streamliners.galleryapp.models.Item;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class GalleryActivity extends AppCompatActivity {
@@ -149,10 +148,8 @@ public class GalleryActivity extends AppCompatActivity {
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         // Check for the menu item selected
         if (item.getItemId() == R.id.edit_item) {
-            editItemInList(adapter.index);
-            return true;
-        } else if (item.getItemId() == R.id.delete_item) {
-            deleteItemFromList(adapter.index);
+            // Show dialog for image editing
+            showImageDialog(adapter.visibleItemsList.get(adapter.index));
             return true;
         } else if (item.getItemId() == R.id.share_item) {
             Toast.makeText(this, "Share Image", Toast.LENGTH_SHORT).show();
@@ -160,30 +157,6 @@ public class GalleryActivity extends AppCompatActivity {
             return true;
         }
         return super.onContextItemSelected(item);
-    }
-
-    // Contextual actions methods
-
-    /**
-     * To edit the item from the list
-     * @param position position defined of the item
-     */
-    private void editItemInList(int position) {
-        // Show dialog for image editing
-        showImageDialog(adapter.visibleItemsList.get(position));
-    }
-
-    /**
-     * To delete the item from the list
-     * @param position position defined of the item
-     */
-    private void deleteItemFromList(int position) {
-        // Remove the item from the list and notify the adapter
-        listOfItems.remove(adapter.visibleItemsList.get(position));
-        adapter.delete(position);
-
-        // Showing the deleted toast
-        Toast.makeText(this, "Item Deleted!", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -264,8 +237,7 @@ public class GalleryActivity extends AppCompatActivity {
                 .showDialog(this, new ImageDialog.OnCompleteListener() {
                     @Override
                     public void OnImageAddedSuccess(Item item) {
-                        // Add in the list and notify the adapter
-                        listOfItems.add(item);
+                        // Notify the adapter
                         adapter.add(item);
 
                         // To set the screen orientation according to the user
@@ -298,18 +270,11 @@ public class GalleryActivity extends AppCompatActivity {
                     @Override
                     public void OnImageAddedSuccess(Item item) {
                         if (selectedItem.label == null) {
-                            // Add in the list and notify the adapter
-                            listOfItems.add(item);
+                            // Notify the adapter
                             adapter.add(item);
-
-                            // Showing the adding toast
-                            Toast.makeText(GalleryActivity.this, "Item Added!", Toast.LENGTH_SHORT).show();
                         } else {
-                            listOfItems.set(listOfItems.indexOf(selectedItem), item);
+                            // Notify the adapter
                             adapter.edit(adapter.index, item);
-
-                            // Showing the editing toast
-                            Toast.makeText(GalleryActivity.this, "Item Edited!", Toast.LENGTH_SHORT).show();
                         }
 
                         // To set the screen orientation according to the user
@@ -435,27 +400,25 @@ public class GalleryActivity extends AppCompatActivity {
         // Set the adapter to the list view
         mainBinding.list.setAdapter(adapter);
 
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,
+        // Make a new item touch and attach to the recycler view
+        (new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,
                 ItemTouchHelper.LEFT) {
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
                 int fromPosition = viewHolder.getAbsoluteAdapterPosition();
                 int toPosition = target.getAbsoluteAdapterPosition();
 
-                Collections.swap(listOfItems, listOfItems.indexOf(adapter.visibleItemsList.get(fromPosition)), listOfItems.indexOf(adapter.visibleItemsList.get(toPosition)));
+                // Swap the items
                 adapter.move(fromPosition, toPosition);
-
-                Toast.makeText(GalleryActivity.this, "done", Toast.LENGTH_SHORT).show();
                 return true;
             }
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int swipeDir) {
                 // Remove swiped item from list and notify the RecyclerView
-                deleteItemFromList(viewHolder.getAbsoluteAdapterPosition());
+                adapter.delete(viewHolder.getAbsoluteAdapterPosition());
             }
-        });
-        itemTouchHelper.attachToRecyclerView(mainBinding.list);
+        })).attachToRecyclerView(mainBinding.list);
     }
 
     /**
