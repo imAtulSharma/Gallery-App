@@ -1,7 +1,7 @@
 # Gallery App
 
 I have made an Gallery Application to add image and show using card view.<br>
-Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v8.2/app-debug.apk) for the application.
+Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v8.4/app-debug.apk) for the application.
 
 ## Features in the application
 
@@ -21,6 +21,8 @@ Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v8.
 - Universal Loader
 - Recycler View
 - Searching and sorting in the list
+- Drag and Drop to rearrange items in list
+- Swipe to remove item in list
 
 ## Previews of the application
 
@@ -34,4 +36,7 @@ Download [APK](https://github.com/imAtulSharma/Gallery-App/releases/download/v8.
 <img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/14.png" alt="" width="231"><img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/15.png" alt="" width="231">
 <img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/16.png" alt="" width="231"><img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/17.png" alt="" width="231">
 <img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/18.png" alt="" width="231"><img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/19.png" alt="" width="231">
-<img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/20.png" alt="" width="231">
+<img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/20.png" alt="" width="231"><img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/21.png" alt="" width="231">
+<img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/22.png" alt="" width="231"><img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/23.png" alt="" width="231">
+<img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/24.png" alt="" width="231"><img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/25.png" alt="" width="231">
+<img title="" src="https://raw.githubusercontent.com/imAtulSharma/imAtulSharma/master/CDN/AndroidApplicationsPreviews/Gallery%20App/26.png" alt="" width="231">
