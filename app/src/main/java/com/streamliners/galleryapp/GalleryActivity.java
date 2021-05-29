@@ -176,7 +176,7 @@ public class GalleryActivity extends AppCompatActivity {
      */
     private void deleteItemFromList(int position) {
         // Remove the item from the list and notify the adapter
-        listOfItems.remove(position);
+        listOfItems.remove(adapter.visibleItemsList.get(position));
         adapter.delete(position);
 
         // Showing the deleted toast
