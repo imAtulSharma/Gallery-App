@@ -55,6 +55,11 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     public ItemCardBinding itemBinding;
 
     /**
+     * To check whether the Drag and Drop enabled or not
+     */
+    public boolean isDragAndDropEnabled;
+
+    /**
      * To initialize the object with...
      * @param context context of the activity
      * @param items list of the items
@@ -189,7 +194,10 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
      * Represents view holder for the recycler view
      */
     class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener{
-        ItemCardBinding cardBinding;
+        /**
+         * Binding of the item selected
+         */
+        private final ItemCardBinding cardBinding;
 
         /**
          * To give binding to the holder
@@ -203,6 +211,13 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
 
         @Override
         public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+            // Checking for the Drag and Drop
+            // if not valid then no context menu is showed
+            // Otherwise will inflate the menu and show it
+            if (isDragAndDropEnabled) {
+                return;
+            }
+
             // Setting the index and binding of the item in the list
             index = this.getAbsoluteAdapterPosition();
             itemBinding = cardBinding;

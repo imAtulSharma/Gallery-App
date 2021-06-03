@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item android:id="@+id/enable_drag_and_drop"
+        android:title="@string/title_enable_drag_and_drop"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_drag_indicator"/>
+
     <item android:id="@+id/sort_alphabetically"
         android:title="@string/title_sort_alphabetically"
         app:showAsAction="ifRoom"

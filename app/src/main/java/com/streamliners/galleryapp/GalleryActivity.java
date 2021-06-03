@@ -30,7 +30,6 @@ import com.google.gson.reflect.TypeToken;
 import com.streamliners.galleryapp.adapters.ItemAdapter;
 import com.streamliners.galleryapp.constants.Constants;
 import com.streamliners.galleryapp.databinding.ActivityGalleryBinding;
-import com.streamliners.galleryapp.databinding.ItemCardBinding;
 import com.streamliners.galleryapp.models.Item;
 
 import java.io.OutputStream;
@@ -137,6 +136,9 @@ public class GalleryActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.sort_alphabetically) {
             adapter.sortAlphabetically();
+            return true;
+        } else if (item.getItemId() == R.id.enable_drag_and_drop) {
+            adapter.isDragAndDropEnabled = !adapter.isDragAndDropEnabled;
             return true;
         }
         return super.onOptionsItemSelected(item);
