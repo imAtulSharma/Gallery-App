@@ -57,6 +57,8 @@ public class GalleryActivity extends AppCompatActivity {
     private SharedPreferences preferences;
     // adapter for the list view
     private ItemAdapter adapter;
+    // For the touching event
+    private ItemTouchHelper itemTouchHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,6 +141,7 @@ public class GalleryActivity extends AppCompatActivity {
             return true;
         } else if (item.getItemId() == R.id.enable_drag_and_drop) {
             adapter.isDragAndDropEnabled = !adapter.isDragAndDropEnabled;
+            changeDragAndDrop(adapter.isDragAndDropEnabled);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -398,9 +401,15 @@ public class GalleryActivity extends AppCompatActivity {
         // Set the adapter to the list view
         mainBinding.list.setAdapter(adapter);
 
-        // Make a new item touch and attach to the recycler view
-        (new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,
-                ItemTouchHelper.LEFT) {
+        // To setup the touch listener
+        changeDragAndDrop(false);
+    }
+
+    /**
+     * To enable Drag and Drop functionality
+     */
+    private void changeDragAndDrop(boolean toEnable) {
+        ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(0,0) {
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
                 int fromPosition = viewHolder.getAbsoluteAdapterPosition();
@@ -416,7 +425,28 @@ public class GalleryActivity extends AppCompatActivity {
                 // Remove swiped item from list and notify the RecyclerView
                 adapter.delete(viewHolder.getAbsoluteAdapterPosition());
             }
-        })).attachToRecyclerView(mainBinding.list);
+        };
+
+        // Firstly detach the helper if attached
+        if (itemTouchHelper != null) {
+            itemTouchHelper.attachToRecyclerView(null);
+        }
+
+        // Check the feature validity
+        if (toEnable) {
+            callback.setDefaultSwipeDirs(0);
+            callback.setDefaultDragDirs(ItemTouchHelper.UP | ItemTouchHelper.DOWN);
+            Toast.makeText(this, "Drag and Drop feature Enabled", Toast.LENGTH_SHORT).show();
+        } else {
+            callback.setDefaultSwipeDirs(ItemTouchHelper.LEFT);
+            callback.setDefaultDragDirs(0);
+            Toast.makeText(this, "Drag and Drop feature Disabled!", Toast.LENGTH_SHORT).show();
+        }
+
+        // Make a new item touch helper
+        itemTouchHelper = new ItemTouchHelper(callback);
+        // Attach to the recycler view
+        itemTouchHelper.attachToRecyclerView(mainBinding.list);
     }
 
     /**
