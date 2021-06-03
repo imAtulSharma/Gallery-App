@@ -185,9 +185,6 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         Collections.swap(mItemList, mItemList.indexOf(visibleItemsList.get(from)), mItemList.indexOf(visibleItemsList.get(to)));
         Collections.swap(visibleItemsList, from, to);
         notifyItemMoved(from, to);
-
-        // Showing the toast
-        Toast.makeText(mContext, "Item Moved!", Toast.LENGTH_SHORT).show();
     }
 
     /**
