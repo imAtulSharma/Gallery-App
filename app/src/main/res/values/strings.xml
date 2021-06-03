@@ -14,4 +14,5 @@
     <string name="title_search">Search</string>
     <string name="title_sort_alphabetically">Sort Alphabetically</string>
     <string name="title_enable_drag_and_drop">Enable Drag and Drop</string>
+    <string name="title_drag_and_drop_done">Drag and Drop done</string>
 </resources>

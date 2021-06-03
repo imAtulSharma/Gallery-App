@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -59,6 +60,9 @@ public class GalleryActivity extends AppCompatActivity {
     private ItemAdapter adapter;
     // For the touching event
     private ItemTouchHelper itemTouchHelper;
+
+    // For the options menu
+    private Menu menu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +116,7 @@ public class GalleryActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        this.menu = menu;
         // Inflate the menu
         getMenuInflater().inflate(R.menu.menu_options, menu);
 
@@ -434,13 +439,33 @@ public class GalleryActivity extends AppCompatActivity {
 
         // Check the feature validity
         if (toEnable) {
+            // Changing the User Interface
+            menu.getItem(0).setIcon(R.drawable.ic_done);
+            menu.getItem(1).setVisible(false);
+            menu.getItem(2).setVisible(false);
+            setTitle("Drag and Drop");
+            mainBinding.fabMain.animate().alpha(0);
+            // Because the code will immediately make the button invisible that's why delay
+            new Handler().postDelayed(() -> mainBinding.fabMain.setVisibility(View.GONE), 1000);
+
+            // Changing directions
             callback.setDefaultSwipeDirs(0);
             callback.setDefaultDragDirs(ItemTouchHelper.UP | ItemTouchHelper.DOWN);
-            Toast.makeText(this, "Drag and Drop feature Enabled", Toast.LENGTH_SHORT).show();
         } else {
+            // Check for the menu
+            if (menu != null) {
+                // Make User Interface in original state
+                menu.getItem(0).setIcon(R.drawable.ic_drag_indicator);
+                menu.getItem(1).setVisible(true);
+                menu.getItem(2).setVisible(true);
+                setTitle("Gallery");
+                mainBinding.fabMain.setVisibility(View.VISIBLE);
+                mainBinding.fabMain.animate().alpha(1);
+            }
+
+            // Changing directions
             callback.setDefaultSwipeDirs(ItemTouchHelper.LEFT);
             callback.setDefaultDragDirs(0);
-            Toast.makeText(this, "Drag and Drop feature Disabled!", Toast.LENGTH_SHORT).show();
         }
 
         // Make a new item touch helper
