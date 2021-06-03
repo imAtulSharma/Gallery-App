@@ -43,7 +43,9 @@ public class GalleryActivity extends AppCompatActivity {
     // Request code for fetch image from camera
     private static final int RC_PHOTO_CAPTURE = 2;
     // Request code for the permission
-    private static final int PERMISSION_CODE = 1000;
+    private static final int CAMERA_PERMISSION_CODE = 1000;
+    // Request code for the permission
+    private static final int SHARE_PERMISSION_CODE = 1001;
 
     // For the image clicked through camera
     private Uri imageUri;
@@ -103,11 +105,17 @@ public class GalleryActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_CODE) {
+        if (requestCode == CAMERA_PERMISSION_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 openCamera();
             } else {
-                Toast.makeText(this, "permission Denied...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Camera or Storage permission Denied", Toast.LENGTH_SHORT).show();
+            }
+        } else if (requestCode == SHARE_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                shareImage();
+            } else {
+                Toast.makeText(this, "Storage permission Denied", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -162,19 +170,37 @@ public class GalleryActivity extends AppCompatActivity {
             showImageDialog(adapter.visibleItemsList.get(adapter.index));
             return true;
         } else if (item.getItemId() == R.id.share_item) {
-            shareItem(adapter.itemBinding.cardView);
+            sharingItem();
             return true;
         }
         return super.onContextItemSelected(item);
     }
 
     /**
-     * To share the bitmap of the particular item card
-     * @param view view to be shared
+     * To get the required permissions to save the bitmap and then share it
      */
-    private void shareItem(View view) {
+    private void sharingItem() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                String[] permission = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+                requestPermissions(permission, SHARE_PERMISSION_CODE);
+            }
+            else {
+                shareImage();
+            }
+        }
+        else {
+            shareImage();
+        }
+    }
+
+    /**
+     * To share the bitmap of the particular item card
+     */
+    private void shareImage() {
         // Get the screen shot of the card view
-        Bitmap icon = getShot(view);
+        Bitmap icon = getShot(adapter.itemBinding.cardView);
 
         // Calling the intent to share the bitmap
         Intent share = new Intent(Intent.ACTION_SEND);
@@ -211,7 +237,7 @@ public class GalleryActivity extends AppCompatActivity {
                     checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
                 String[] permission = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
-                requestPermissions(permission, PERMISSION_CODE);
+                requestPermissions(permission, CAMERA_PERMISSION_CODE);
             }
             else {
                 openCamera();
