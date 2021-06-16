@@ -26,11 +26,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.streamliners.galleryapp.adapters.ItemAdapter;
-import com.streamliners.galleryapp.constants.Constants;
 import com.streamliners.galleryapp.databinding.ActivityGalleryBinding;
+import com.streamliners.galleryapp.helpers.databaseHelper;
 import com.streamliners.galleryapp.models.Item;
 
 import java.io.OutputStream;
@@ -62,6 +60,8 @@ public class GalleryActivity extends AppCompatActivity {
     private ItemAdapter adapter;
     // For the touching event
     private ItemTouchHelper itemTouchHelper;
+    // For the database helper
+    private databaseHelper dbHelper;
 
     // For the options menu
     private Menu menu;
@@ -77,8 +77,9 @@ public class GalleryActivity extends AppCompatActivity {
         // Setup FABs
         setupFab();
 
-        preferences = getPreferences(MODE_PRIVATE);
-        getDataFromSharedPreferences();
+        // Initializing the helper
+        dbHelper = new databaseHelper(this);
+        getDataFromSqliteDatabase();
 
         // Setup the recycler view for the items list
         setupRecyclerView();
@@ -528,21 +529,23 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     /**
-     * To restore the data using shared preferences
+     * To restore the data using Sqlite database
      */
-    private void getDataFromSharedPreferences() {
-        String json = preferences.getString(Constants.LIST_OF_ITEMS, "[]");
-
-        // Make the list item from the shared preferences
-        listOfItems = (new Gson()).fromJson(json, new TypeToken<List<Item>>() {}.getType());
+    private void getDataFromSqliteDatabase() {
+        // Fetching the list of items from the database
+        listOfItems = dbHelper.fetchItems();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        preferences.edit()
-                .putString(Constants.LIST_OF_ITEMS, (new Gson()).toJson(listOfItems))
-                .apply();
+        // Firstly clear all previous items in the database table
+        dbHelper.clearAllItems();
+
+        // Adding each item in the database table
+        for (Item item : listOfItems) {
+            dbHelper.addItem(item);
+        }
     }
 }
