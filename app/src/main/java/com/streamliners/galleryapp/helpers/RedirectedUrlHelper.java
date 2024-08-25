@@ -68,7 +68,7 @@ public class RedirectedUrlHelper extends AsyncTask<String, Void, String> {
             mListener.onError(ioException.toString());
         }
 
-        redUrl = connection.getHeaderField(6);
+        redUrl = connection.getHeaderField("location");
         connection.disconnect();
 
         return redUrl;
